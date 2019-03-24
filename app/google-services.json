@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "387997336762",
+    "firebase_url": "https://keyfixer-fbdf6.firebaseio.com",
+    "project_id": "keyfixer-fbdf6",
+    "storage_bucket": "keyfixer-fbdf6.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:387997336762:android:d6ac80085a33be59",
+        "android_client_info": {
+          "package_name": "com.keyfixer.partner"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "387997336762-f6pqqs7ts4aj04cea3epspmhk19s87ol.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.keyfixer.partner",
+            "certificate_hash": "80c907a83b45fcfcfe0d65865fb39e9051b34cfe"
+          }
+        },
+        {
+          "client_id": "387997336762-9c99hif9hn7qh6s0uo0tkev5g1i65k8l.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBxFCAO9lSfPDCmpXn3QMeAdvY2QulLqW8"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "387997336762-9c99hif9hn7qh6s0uo0tkev5g1i65k8l.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
