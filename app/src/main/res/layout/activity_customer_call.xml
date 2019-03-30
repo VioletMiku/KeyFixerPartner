@@ -45,4 +45,31 @@
             android:textAlignment="center"
             android:id="@+id/txt_Address"/>
     </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_alignParentBottom="true"
+        android:weightSum="2"
+        android:layout_above="@id/txt_keyfixer_app"
+        android:layout_margin="16dp">
+        <Button
+            android:background="@android:color/holo_blue_bright"
+            android:id="@+id/btn_accept"
+            android:textColor="@android:color/white"
+            android:text="S Ử A"
+            android:layout_marginRight="6dp"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content" />
+        <Button
+            android:background="@android:color/darker_gray"
+            android:id="@+id/btn_decline"
+            android:textColor="@android:color/white"
+            android:text="H Ủ Y"
+            android:layout_marginLeft="6dp"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
 </RelativeLayout>

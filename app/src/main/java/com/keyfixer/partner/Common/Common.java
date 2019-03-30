@@ -18,6 +18,8 @@ public class Common {
 
     public static final String baseUrl = "https://maps.googleapis.com";
     public static final String fcmUrl = "https://fcm.googleapis.com/";
+    public static final String user_field = "usr";
+    public static final String pwd_field = "pwd";
 
     public static IGoogleAPI getGoogleAPI(){
         return RetrofitClient.getClient(baseUrl).create(IGoogleAPI.class);
