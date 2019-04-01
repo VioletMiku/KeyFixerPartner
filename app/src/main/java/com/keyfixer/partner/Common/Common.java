@@ -2,6 +2,7 @@ package com.keyfixer.partner.Common;
 
 import android.location.Location;
 
+import com.keyfixer.partner.Model.User;
 import com.keyfixer.partner.Remote.FCMClient;
 import com.keyfixer.partner.Remote.IFCMService;
 import com.keyfixer.partner.Remote.IGoogleAPI;
@@ -16,8 +17,12 @@ public class Common {
     public static final String token_tbl = "Tokens";
     public static Location mLastLocation = null;
 
+    public static User currentUser;
+
     public static final String baseUrl = "https://maps.googleapis.com";
     public static final String fcmUrl = "https://fcm.googleapis.com/";
+    public static final String user_field = "usr";
+    public static final String pwd_field = "pwd";
 
     public static IGoogleAPI getGoogleAPI(){
         return RetrofitClient.getClient(baseUrl).create(IGoogleAPI.class);

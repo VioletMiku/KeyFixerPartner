@@ -47,9 +47,11 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.maps.model.SquareCap;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.keyfixer.partner.Model.Token;
 import com.keyfixer.partner.Remote.IGoogleAPI;
@@ -77,7 +79,7 @@ public class HomeActivity extends FragmentActivity implements OnMapReadyCallback
 
     private GoogleMap mMap;
     private IGoogleAPI mService;
-    //play services
+    //////////////////play services/////////////////////////////
     private static final int MY_PERMISSION_REQUEST_CODE = 7000;
     private static final int PLAY_SERVICE_RES_REQUEST = 7001;
 
@@ -87,7 +89,7 @@ public class HomeActivity extends FragmentActivity implements OnMapReadyCallback
     private static int UPDATE_INTERVAL = 5000;
     private static int FASTEST_INTERVAL = 3000;
     private static int DISPLACEMENT = 10;
-
+    //////////////////////////////////////////////////////////
     DatabaseReference fixers;
     GeoFire geoFire;
     Marker mCurrent;
@@ -108,6 +110,7 @@ public class HomeActivity extends FragmentActivity implements OnMapReadyCallback
     private Button btnGo;
     private EditText editText;
 
+    DatabaseReference onlineRef, currentRef;
 
     Runnable drawPathRunnable = new Runnable() {
         @Override
@@ -177,18 +180,40 @@ public class HomeActivity extends FragmentActivity implements OnMapReadyCallback
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
+        //geo fire
+        fixers = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl);
+        geoFire = new GeoFire(fixers);
+        setupLocation();
+        //presense system
+        onlineRef = FirebaseDatabase.getInstance().getReference().child("/info/connected");
+        currentRef = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl).child(FirebaseAuth.getInstance().getCurrentUser().getUid());
+        onlineRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                //Gỡ bỏ địa điểm hiện tại của fixer ra khỏi bản đồ khi họ ngắt kết nối internet hay tắt app
+                currentRef.onDisconnect().removeValue();
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
         //init view
         location_switch = (MaterialAnimatedSwitch) findViewById(R.id.location_switch);
         location_switch.setOnCheckedChangeListener(new MaterialAnimatedSwitch.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(boolean isOnline) {
                 if (isOnline){
+                    FirebaseDatabase.getInstance().goOnline(); // set thành connected khi bật lại
                     startLocationUpdate();
                     displayLocation();
                     Snackbar.make(mapFragment.getView(),"Bạn đang online",Snackbar.LENGTH_SHORT).show();
                 }
                 else{
                     try{
+                        FirebaseDatabase.getInstance().goOffline(); // set thành disconnected khi tắt đi
                         stopLocationUpdate();
                         mCurrent.remove();
                         mMap.clear();
@@ -228,10 +253,6 @@ public class HomeActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
 */
-        //geo fire
-        fixers = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl);
-        geoFire = new GeoFire(fixers);
-        setupLocation();
 
         mService = Common.getGoogleAPI();
         UpdateFireBaseToken();
@@ -419,7 +440,6 @@ public class HomeActivity extends FragmentActivity implements OnMapReadyCallback
         }
         else{
             Log.d("Ối!", "Không thể xác định được vị trí của bạn");
-            Toast.makeText(this, "Bạn bật GPS chưa nhỉ ?!", Toast.LENGTH_SHORT).show();
         }
     }
 

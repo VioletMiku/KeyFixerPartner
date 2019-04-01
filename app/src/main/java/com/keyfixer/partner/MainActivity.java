@@ -15,6 +15,9 @@ import android.widget.Button;
 import android.widget.RelativeLayout;
 
 import com.google.firebase.FirebaseApp;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.ValueEventListener;
 import com.keyfixer.partner.Common.Common;
 import com.keyfixer.partner.Model.User;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -26,6 +29,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.rengwuxian.materialedittext.MaterialEditText;
 
 import dmax.dialog.SpotsDialog;
+import io.paperdb.Paper;
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
@@ -51,7 +55,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .build());
 
         setContentView(R.layout.activity_main);
-
+        //init paperdb - for Remember me feature
+        Paper.init(this);
         //Init Firebase
         FirebaseApp.initializeApp(this);
         auth = FirebaseAuth.getInstance();
@@ -68,6 +73,44 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         welcomeLayout = (RelativeLayout) findViewById(R.id.welcome_Layout);
         btnSignIn.setOnClickListener(this);
         btnRegister.setOnClickListener(this);
+        String user = Paper.book().read("usr");
+        String pwd = Paper.book().read("pwd");
+        if (user != null && pwd != null){
+            if (!TextUtils.isEmpty(user) && !TextUtils.isEmpty(pwd))
+                autoLogin(user,pwd);
+        }
+    }
+
+    private void autoLogin(String user, String pwd) {
+        if (TextUtils.isEmpty(user)){
+            Snackbar.make(welcomeLayout,"Làm ơn nhập email giùm",Snackbar.LENGTH_SHORT).show();
+            return;
+        }
+        if (TextUtils.isEmpty(pwd)){
+            Snackbar.make(welcomeLayout,"Làm ơn nhập mật khẩu giùm",Snackbar.LENGTH_SHORT).show();
+            return;
+        }
+        final SpotsDialog waiting_dialog = new SpotsDialog(MainActivity.this);
+        waiting_dialog.show();
+        //Login
+        auth.signInWithEmailAndPassword(user, pwd)
+                .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
+                    @Override
+                    public void onSuccess(AuthResult authResult) {
+                        waiting_dialog.dismiss();
+                        startActivity(new Intent(MainActivity.this,HomeActivity.class));
+                        waiting_dialog.dismiss();
+                        finish();
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                waiting_dialog.dismiss();
+                Snackbar.make(welcomeLayout,"Đăng nhập thất bại!",Snackbar.LENGTH_SHORT).show();
+                //set enable button sign in if it failed
+                btnSignIn.setEnabled(true);
+            }
+        });
     }
 
     @Override
@@ -202,6 +245,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             @Override
                             public void onSuccess(AuthResult authResult) {
                                 waiting_dialog.dismiss();
+
+                                FirebaseDatabase.getInstance().getReference(Common.fixer_inf_tbl).child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                                        .addListenerForSingleValueEvent(new ValueEventListener() {
+                                            @Override
+                                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                                Common.currentUser = dataSnapshot.getValue(User.class);
+                                            }
+
+                                            @Override
+                                            public void onCancelled(DatabaseError databaseError) {
+
+                                            }
+                                        });
+
                                 startActivity(new Intent(MainActivity.this,HomeActivity.class));
                                 finish();
                             }
