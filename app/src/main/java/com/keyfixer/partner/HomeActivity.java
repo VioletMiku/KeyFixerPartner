@@ -47,12 +47,17 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.maps.model.SquareCap;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.keyfixer.partner.Model.Token;
 import com.keyfixer.partner.Remote.IGoogleAPI;
 import com.keyfixer.partner.Common.Common;
 import com.keyfixer.partner.Remote.IGoogleAPI;
+import com.keyfixer.partner.Services.OurFirebaseIdService;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -80,7 +85,6 @@ public class HomeActivity extends FragmentActivity implements OnMapReadyCallback
 
     private LocationRequest mLocationRequest;
     private GoogleApiClient mGoogleAPiClient;
-    private Location mLastLocation;
 
     private static int UPDATE_INTERVAL = 5000;
     private static int FASTEST_INTERVAL = 3000;
@@ -106,6 +110,8 @@ public class HomeActivity extends FragmentActivity implements OnMapReadyCallback
     private Button btnGo;
     private EditText editText;
 
+    //presense system
+    DatabaseReference onlineref, currentUserref;
 
     Runnable drawPathRunnable = new Runnable() {
         @Override
@@ -174,19 +180,35 @@ public class HomeActivity extends FragmentActivity implements OnMapReadyCallback
         mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+        //Presense system
+        onlineref = FirebaseDatabase.getInstance().getReference().child("info/connected");
+        currentUserref = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl).child(FirebaseAuth.getInstance().getCurrentUser().getUid());
+        onlineref.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                //disconnected fixer from map when they off
+                currentUserref.onDisconnect().removeValue();
+            }
 
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
         //init view
         location_switch = (MaterialAnimatedSwitch) findViewById(R.id.location_switch);
         location_switch.setOnCheckedChangeListener(new MaterialAnimatedSwitch.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(boolean isOnline) {
                 if (isOnline){
+                    FirebaseDatabase.getInstance().goOnline();//set connected when the fixer comeback
                     startLocationUpdate();
                     displayLocation();
                     Snackbar.make(mapFragment.getView(),"Bạn đang online",Snackbar.LENGTH_SHORT).show();
                 }
                 else{
                     try{
+                        FirebaseDatabase.getInstance().goOffline();//set disconnected when the fixer leave
                         stopLocationUpdate();
                         mCurrent.remove();
                         mMap.clear();
@@ -232,10 +254,18 @@ public class HomeActivity extends FragmentActivity implements OnMapReadyCallback
         setupLocation();
 
         mService = Common.getGoogleAPI();
+        UpdateFireBaseToken();
+    }
+
+    private void UpdateFireBaseToken() {
+        FirebaseDatabase db = FirebaseDatabase.getInstance();
+        DatabaseReference tokens = db.getReference(Common.token_tbl);
+        Token token = new Token(FirebaseInstanceId.getInstance().getToken());
+        tokens.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).setValue(token);
     }
 
     private void getDirection() {
-        currentPosition = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
+        currentPosition = new LatLng(Common.mLastLocation.getLatitude(), Common.mLastLocation.getLongitude());
         String requestAPI = null;
 
         try{
@@ -386,11 +416,11 @@ public class HomeActivity extends FragmentActivity implements OnMapReadyCallback
                 && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
             return;
         }
-        mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleAPiClient);
-        if (mLastLocation != null){//co bug cho nay _ mlastLocation = null
+        Common.mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleAPiClient);
+        if (Common.mLastLocation != null){//co bug cho nay _ mlastLocation = null
             if (location_switch.isChecked()){
-                final double latitude = mLastLocation.getLatitude();
-                final double longtitude = mLastLocation.getLongitude();
+                final double latitude = Common.mLastLocation.getLatitude();
+                final double longtitude = Common.mLastLocation.getLongitude();
                 //Update to firebase
                 geoFire.setLocation(FirebaseAuth.getInstance().getCurrentUser().getUid(), new GeoLocation(latitude, longtitude), new GeoFire.CompletionListener() {
                     @Override
@@ -408,8 +438,7 @@ public class HomeActivity extends FragmentActivity implements OnMapReadyCallback
             }
         }
         else{
-            Log.d("Ối!", "Không thể xác định được vị trí của bạn");
-            Toast.makeText(this, "Bạn bật GPS chưa nhỉ ?!", Toast.LENGTH_SHORT).show();
+            Log.d("Ối!", "Không thể xác định được vị trí của fixer");
         }
     }
 
@@ -509,7 +538,7 @@ public class HomeActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     public void onLocationChanged(Location location) {
-        mLastLocation = location;
+        Common.mLastLocation = location;
         displayLocation();
     }
 

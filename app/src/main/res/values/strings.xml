@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">KeyFixer</string>
     <string name="title_activity_home">Map</string>
-    <string name="google_direction_api">AIzaSyDeWQj-U1sn2QcWDOmVpsnxHRRzHGKK7ew</string>
+    <string name="google_direction_api">AIzaSyAzSIjRrBFvjdV0XUhNertTOewBlyMGehA</string>
+    <string name="title_activity_fixer_tracking">Map</string>
 </resources>
