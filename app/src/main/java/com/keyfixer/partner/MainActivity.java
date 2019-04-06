@@ -15,6 +15,9 @@ import android.widget.Button;
 import android.widget.RelativeLayout;
 
 import com.google.firebase.FirebaseApp;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.ValueEventListener;
 import com.keyfixer.partner.Common.Common;
 import com.keyfixer.partner.Model.User;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -202,6 +205,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             @Override
                             public void onSuccess(AuthResult authResult) {
                                 waiting_dialog.dismiss();
+
+                                FirebaseDatabase.getInstance().getReference(Common.fixer_inf_tbl).child(FirebaseAuth
+                                .getInstance().getCurrentUser().getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(DataSnapshot dataSnapshot) {
+                                        Common.currentUser = dataSnapshot.getValue(User.class);
+                                    }
+
+                                    @Override
+                                    public void onCancelled(DatabaseError databaseError) {
+
+                                    }
+                                });
+
                                 startActivity(new Intent(MainActivity.this,HomeActivity.class));
                                 finish();
                             }

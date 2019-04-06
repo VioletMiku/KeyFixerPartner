@@ -222,8 +222,6 @@ public class HomeActivity extends FragmentActivity implements OnMapReadyCallback
         });
 
         Lo_trinh = new ArrayList<>();
-        btnGo = (Button) findViewById(R.id.btn_go);
-        editText = (EditText) findViewById(R.id.edt_Place);
         btnGo.setOnClickListener(this);
 
 /*

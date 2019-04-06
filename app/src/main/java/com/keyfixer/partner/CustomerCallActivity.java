@@ -160,7 +160,7 @@ public class CustomerCallActivity extends AppCompatActivity implements View.OnCl
                 //send customer location to new activity
                 intent.putExtra("lat",lat);
                 intent.putExtra("lng",lng);
-                //intent.putExtra("customerId",customerId);
+                intent.putExtra("customerId",customerId);
                 startActivity(intent);
                 finish();
                 break;

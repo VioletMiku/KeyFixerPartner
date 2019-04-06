@@ -16,6 +16,8 @@ import android.widget.Toast;
 
 import com.firebase.geofire.GeoFire;
 import com.firebase.geofire.GeoLocation;
+import com.firebase.geofire.GeoQuery;
+import com.firebase.geofire.GeoQueryEventListener;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -36,8 +38,14 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
 import com.keyfixer.partner.Common.Common;
 import com.keyfixer.partner.Helper.DirectionJSONParser;
+import com.keyfixer.partner.Model.FCMResponse;
+import com.keyfixer.partner.Model.Notification;
+import com.keyfixer.partner.Model.Sender;
+import com.keyfixer.partner.Model.Token;
+import com.keyfixer.partner.Remote.IFCMService;
 import com.keyfixer.partner.Remote.IGoogleAPI;
 
 import org.json.JSONException;
@@ -58,6 +66,9 @@ public class FixerTracking extends FragmentActivity implements OnMapReadyCallbac
 
     private GoogleMap mMap;
     IGoogleAPI mService;
+    IFCMService ifcmService;
+    GeoFire geofire;
+    String customerid;
     double customerlat, customerlng;
     //play services
     private static final int PLAY_SERVICE_RES_REQUEST = 7001;
@@ -90,14 +101,63 @@ public class FixerTracking extends FragmentActivity implements OnMapReadyCallbac
             customerlng = getIntent().getDoubleExtra("lng", -1.0);
         }
         mService = Common.getGoogleAPI();
+        ifcmService = Common.getFCMService();
         setupLocation();
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        customerMarker = mMap.addCircle(new CircleOptions().center(new LatLng(customerlat, customerlng)).radius(10)
+        customerMarker = mMap.addCircle(new CircleOptions().center(new LatLng(customerlat, customerlng)).radius(50)
                 .strokeColor(Color.BLUE).fillColor(0x220000FF).strokeWidth(5.0f));
+        geofire = new GeoFire(FirebaseDatabase.getInstance().getReference(Common.fixer_tbl));
+        GeoQuery geoQuery = geofire.queryAtLocation(new GeoLocation(customerlat, customerlng), 0.05f);
+        geoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
+            @Override
+            public void onKeyEntered(String key , GeoLocation location) {
+                sendArrivedNotification(customerid);
+            }
+
+            @Override
+            public void onKeyExited(String key) {
+
+            }
+
+            @Override
+            public void onKeyMoved(String key , GeoLocation location) {
+
+            }
+
+            @Override
+            public void onGeoQueryReady() {
+
+            }
+
+            @Override
+            public void onGeoQueryError(DatabaseError error) {
+
+            }
+        });
+    }
+
+    private void sendArrivedNotification(String customerid) {
+        Token token = new Token(customerid);
+        Notification notification = new Notification("Đã đến","Thợ sửa bạn đặt đã đến, chúc bạn một ngày vui vẻ!");
+        Sender sender = new Sender(token.getToken(), notification);
+        ifcmService.sendMessage(sender).enqueue(new Callback<FCMResponse>() {
+            @Override
+            public void onResponse(Call<FCMResponse> call , Response<FCMResponse> response) {
+                if (response.body().success == 1){
+                    Toast.makeText(FixerTracking.this, "Đã đến", Toast.LENGTH_SHORT).show();
+                    finish();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<FCMResponse> call , Throwable t) {
+
+            }
+        });
     }
 
     @Override
@@ -134,7 +194,6 @@ public class FixerTracking extends FragmentActivity implements OnMapReadyCallbac
         }
         else{
             Log.d("Ối!", "Không thể xác định được vị trí của bạn");
-            Toast.makeText(this, "Bạn bật GPS chưa nhỉ ?!", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -224,13 +283,13 @@ public class FixerTracking extends FragmentActivity implements OnMapReadyCallbac
     }
 
     private class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<String, String>>>> {
-        ProgressDialog progressDialog = new ProgressDialog(FixerTracking.this);
+        ProgressDialog mDialog = new ProgressDialog(FixerTracking.this);
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            progressDialog.setMessage("Chờ tí nhé");
-            progressDialog.show();
+            mDialog.setMessage("Chờ tí nhé");
+            mDialog.show();
         }
 
         @Override
@@ -247,11 +306,11 @@ public class FixerTracking extends FragmentActivity implements OnMapReadyCallbac
             return routes;
         }
 
+        PolylineOptions polylineOptions = null;
         @Override
         protected void onPostExecute(List<List<HashMap<String, String>>> lists) {
-            progressDialog.dismiss();
+            mDialog.dismiss();
             ArrayList points;
-            PolylineOptions polylineOptions = null;
             for (int i =0 ; i < lists.size() ; i++){
                 points = new ArrayList();
                 polylineOptions = new PolylineOptions();
@@ -267,7 +326,7 @@ public class FixerTracking extends FragmentActivity implements OnMapReadyCallbac
                 }
 
                 polylineOptions.addAll(points);
-                polylineOptions.width(10);
+                polylineOptions.width(5);
                 polylineOptions.color(Color.RED);
                 polylineOptions.geodesic(true);
             }
