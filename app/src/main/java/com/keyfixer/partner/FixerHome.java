@@ -2,19 +2,30 @@ package com.keyfixer.partner;
 
 import android.Manifest;
 import android.animation.ValueAnimator;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
+import android.os.Bundle;
 import android.os.Handler;
-import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.FragmentActivity;
-import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.support.design.widget.NavigationView;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.animation.LinearInterpolator;
 import android.widget.Button;
 import android.widget.EditText;
@@ -23,13 +34,11 @@ import android.widget.Toast;
 import com.firebase.geofire.GeoFire;
 import com.firebase.geofire.GeoLocation;
 import com.github.glomadrian.materialanimatedswitch.MaterialAnimatedSwitch;
+import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
-//import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.common.api.Status;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -46,6 +55,10 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.maps.model.SquareCap;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -53,29 +66,31 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.iid.FirebaseInstanceId;
+import com.keyfixer.partner.Common.Common;
 import com.keyfixer.partner.Model.Token;
 import com.keyfixer.partner.Remote.IGoogleAPI;
-import com.keyfixer.partner.Common.Common;
-import com.keyfixer.partner.Remote.IGoogleAPI;
-import com.keyfixer.partner.Services.OurFirebaseIdService;
+import com.rengwuxian.materialedittext.MaterialEditText;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import dmax.dialog.SpotsDialog;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class HomeActivity extends FragmentActivity implements OnMapReadyCallback,
+public class FixerHome extends AppCompatActivity
+        implements NavigationView.OnNavigationItemSelectedListener, OnMapReadyCallback,
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
         LocationListener,
-        View.OnClickListener{
+        View.OnClickListener {
 
     private GoogleMap mMap;
     private IGoogleAPI mService;
@@ -143,7 +158,7 @@ public class HomeActivity extends FragmentActivity implements OnMapReadyCallback
                                 new CameraPosition.Builder().target(newPos).zoom(15.5f).build()
                         ));
                     }catch(NullPointerException NPex){
-                        Toast.makeText(HomeActivity.this, "NullPointerException!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(FixerHome.this, "NullPointerException!", Toast.LENGTH_SHORT).show();
                     }
                 }
             });
@@ -174,7 +189,20 @@ public class HomeActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_home);
+        setContentView(R.layout.activity_fixer_home);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this , drawer , toolbar , R.string.navigation_drawer_open , R.string.navigation_drawer_close);
+        drawer.addDrawerListener(toggle);
+        toggle.syncState();
+
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
+
         //mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -215,36 +243,11 @@ public class HomeActivity extends FragmentActivity implements OnMapReadyCallback
                         handler.removeCallbacks(drawPathRunnable);
                         Snackbar.make(mapFragment.getView(),"Bạn đang offline",Snackbar.LENGTH_SHORT).show();
                     }catch(NullPointerException ex){
-                        Toast.makeText(HomeActivity.this, "Vui lòng bật GPS rồi thử lại !", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(FixerHome.this, "Vui lòng bật GPS rồi thử lại !", Toast.LENGTH_SHORT).show();
                     }
                 }
             }
         });
-
-        Lo_trinh = new ArrayList<>();
-
-/*
-        //places api
-        places = (PlaceAutocompleteFragment) getFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
-        places.setOnPlaceSelectedListener(new PlaceSelectionListener() {
-            @Override
-            public void onPlaceSelected(Place place) {
-                if (location_switch.isChecked()){
-                    destination = place.getAddress().toString();
-                    destination = destination.replace(" ", "+");
-
-                    getDirection();
-                } else{
-                    Toast.makeText(HomeActivity.this, "Xin hãy bật vị trí của bạn!", Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onError(Status status) {
-                Toast.makeText(HomeActivity.this, "" + status.toString(), Toast.LENGTH_SHORT).show();
-            }
-        });
-*/
         //geo fire
         fixers = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl);
         geoFire = new GeoFire(fixers);
@@ -253,6 +256,7 @@ public class HomeActivity extends FragmentActivity implements OnMapReadyCallback
         mService = Common.getGoogleAPI();
         UpdateFireBaseToken();
     }
+
 
     private void UpdateFireBaseToken() {
         FirebaseDatabase db = FirebaseDatabase.getInstance();
@@ -349,7 +353,7 @@ public class HomeActivity extends FragmentActivity implements OnMapReadyCallback
 
                 @Override
                 public void onFailure(Call<String> call, Throwable t) {
-                    Toast.makeText(HomeActivity.this, "Không thể lấy được đường đi, xin vui lòng thử lại!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(FixerHome.this, "Không thể lấy được đường đi, xin vui lòng thử lại!", Toast.LENGTH_SHORT).show();
                     System.out.print(t.getMessage());
                 }
             });
@@ -410,12 +414,12 @@ public class HomeActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     private void setupLocation() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
             //Request runtime permission
             ActivityCompat.requestPermissions(this, new String[]{
-                    Manifest.permission.ACCESS_COARSE_LOCATION,
-                    Manifest.permission.ACCESS_FINE_LOCATION
+                    android.Manifest.permission.ACCESS_COARSE_LOCATION,
+                    android.Manifest.permission.ACCESS_FINE_LOCATION
             },MY_PERMISSION_REQUEST_CODE);
         }
         else{
@@ -457,23 +461,23 @@ public class HomeActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     private void startLocationUpdate() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
             return;
         }
         LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleAPiClient, mLocationRequest, this);
     }
 
     private void stopLocationUpdate() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
             return;
         }
         LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleAPiClient,this);
     }
 
     private void displayLocation() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
             return;
         }
@@ -503,40 +507,146 @@ public class HomeActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
-    private void rotateMarker(final Marker mCurrent, final float i, GoogleMap mMap) {
-        final Handler handler = new Handler();
-        final long start = SystemClock.uptimeMillis();
-        final float startRotation = mCurrent.getRotation();
-        final long duration = 1500;
-        final LinearInterpolator interpolator = new LinearInterpolator();
-        handler.post(new Runnable() {
+    @Override
+    public void onBackPressed() {
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.fixer_home , menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    @SuppressWarnings("StatementWithEmptyBody")
+    @Override
+    public boolean onNavigationItemSelected(MenuItem item) {
+        // Handle navigation view item clicks here.
+        int id = item.getItemId();
+
+        if (id == R.id.nav_fix_history) {
+            // Handle the camera action
+        } else if (id == R.id.nav_help) {
+
+        } else if (id == R.id.nav_settings) {
+
+        } else if (id == R.id.nav_signout) {
+            Signout();
+        } else if (id == R.id.nav_view) {
+
+        } else if (id == R.id.nav_way_bill) {
+
+        } else if (id == R.id.nav_change_password) {
+            showDialogChangePassword();
+        }
+
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer.closeDrawer(GravityCompat.START);
+        return true;
+    }
+
+    private void showDialogChangePassword() {
+        final AlertDialog.Builder alertDialog = new AlertDialog.Builder(FixerHome.this);
+        alertDialog.setTitle("Thay đổi mật khẩu");
+
+        LayoutInflater inflater = this.getLayoutInflater();
+        View layout_pwd = inflater.inflate(R.layout.layout_change_password, null);
+        final MaterialEditText edtOldPassword = (MaterialEditText) layout_pwd.findViewById(R.id.edt_OldPassword);
+        final MaterialEditText edtNewPassword = (MaterialEditText) layout_pwd.findViewById(R.id.edt_NewPassword);
+        final MaterialEditText edtRepeatPassword = (MaterialEditText) layout_pwd.findViewById(R.id.edt_RepeatPassword);
+
+        alertDialog.setView(layout_pwd);
+        alertDialog.setPositiveButton("Đổi mật khẩu" , new DialogInterface.OnClickListener() {
             @Override
-            public void run() {
-                long elapsed = SystemClock.uptimeMillis() - start;
-                float t = interpolator.getInterpolation((float)elapsed/duration);
-                float rotation = t*i + (1-t)*startRotation;
-                mCurrent.setRotation(-rotation > 180?rotation/2:rotation);
-                if (t < 1.0){
-                    handler.postDelayed(this, 16);
+            public void onClick(DialogInterface dialogInterface , int i) {
+                final SpotsDialog waitingDialog = new SpotsDialog(FixerHome.this);
+                waitingDialog.show();
+
+                if (edtNewPassword.getText().toString().equals(edtRepeatPassword.getText().toString())){
+
+                    String strEmail = FirebaseAuth.getInstance().getCurrentUser().getEmail();
+                    AuthCredential credential = EmailAuthProvider.getCredential(strEmail, edtOldPassword.getText().toString());
+                    FirebaseAuth.getInstance().getCurrentUser().reauthenticate(credential).addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            if (task.isSuccessful()){
+
+                                FirebaseAuth.getInstance().getCurrentUser().updatePassword(edtRepeatPassword.getText().toString())
+                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<Void> task) {
+                                                if (task.isSuccessful()){
+
+                                                    Map<String, Object> password = new HashMap<>();
+                                                    password.put("password", edtRepeatPassword.getText().toString());
+                                                    DatabaseReference fixerInf = FirebaseDatabase.getInstance().getReference(Common.fixer_inf_tbl);
+                                                    fixerInf.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).updateChildren(password)
+                                                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                                @Override
+                                                                public void onComplete(@NonNull Task<Void> task) {
+                                                                    if (task.isSuccessful()){
+                                                                        Toast.makeText(FixerHome.this , "Mật khẩu thay đổi thành công" , Toast.LENGTH_SHORT).show();         
+                                                                    } else{
+                                                                        Toast.makeText(FixerHome.this , "Mật khẩu đã thay đổi nhưng chưa hoàn tất việc cập nhật" , Toast.LENGTH_SHORT).show();
+                                                                    }
+                                                                    waitingDialog.dismiss();
+                                                                }
+                                                            });
+
+                                                } else{
+                                                    Toast.makeText(FixerHome.this , "Mật khẩu thay đổi thất bại" , Toast.LENGTH_SHORT).show();
+                                                }
+                                            }
+                                        });
+
+                            } else{
+                                waitingDialog.dismiss();
+                                Toast.makeText(FixerHome.this , "Sai mật khẩu" , Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
+
+                } else{
+                    Toast.makeText(FixerHome.this , "Mật khẩu lặp lại không trùng khớp với mật khẩu mới" , Toast.LENGTH_SHORT).show();
                 }
             }
         });
+        alertDialog.setNegativeButton("Hủy" , new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface , int i) {
+                dialogInterface.dismiss();
+            }
+        });
+        alertDialog.show();
+    }
+
+    private void Signout() {
+        FirebaseAuth.getInstance().signOut();
+        Intent intent = new Intent(FixerHome.this, MainActivity.class);
+        startActivity(intent);
+        finish();
     }
 
     @Override
-    public void onMapReady(GoogleMap googleMap) {
-        mMap = googleMap;
-        mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
-        mMap.setTrafficEnabled(false);
-        mMap.setIndoorEnabled(false);
-        mMap.setBuildingsEnabled(false);
-        mMap.getUiSettings().setZoomControlsEnabled(true);
-    }
+    public void onClick(View view) {
 
-    @Override
-    public void onLocationChanged(Location location) {
-        Common.mLastLocation = location;
-        displayLocation();
     }
 
     @Override
@@ -556,10 +666,18 @@ public class HomeActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     @Override
-    public void onClick(View v) {
-        destination = editText.getText().toString();
-        destination = destination.replace(" ", "+");
-        Log.d("Key Fixer", destination);
-        getDirection();
+    public void onLocationChanged(Location location) {
+        Common.mLastLocation = location;
+        displayLocation();
+    }
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        mMap = googleMap;
+        mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+        mMap.setTrafficEnabled(false);
+        mMap.setIndoorEnabled(false);
+        mMap.setBuildingsEnabled(false);
+        mMap.getUiSettings().setZoomControlsEnabled(true);
     }
 }

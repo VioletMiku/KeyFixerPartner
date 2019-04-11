@@ -10,10 +10,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -32,13 +36,14 @@ import dmax.dialog.SpotsDialog;
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, View.OnTouchListener {
 
     RelativeLayout welcomeLayout;
     Button btnSignIn, btnRegister;
     FirebaseAuth auth;
     FirebaseDatabase db;
     DatabaseReference users;
+    TextView txt_forget_password;
 
     @Override
     protected void attachBaseContext(Context newBase) {
@@ -60,7 +65,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         auth = FirebaseAuth.getInstance();
         db = FirebaseDatabase.getInstance();
         users = db.getReference(Common.fixer_inf_tbl);
-
+        txt_forget_password = (TextView) findViewById(R.id.txt_forgot_password);
         //Init view
         GetButtonControl();
     }
@@ -71,6 +76,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         welcomeLayout = (RelativeLayout) findViewById(R.id.welcome_Layout);
         btnSignIn.setOnClickListener(this);
         btnRegister.setOnClickListener(this);
+        txt_forget_password.setOnTouchListener(this);
     }
 
     @Override
@@ -219,7 +225,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                     }
                                 });
 
-                                startActivity(new Intent(MainActivity.this,HomeActivity.class));
+                                startActivity(new Intent(MainActivity.this,FixerHome.class));
                                 finish();
                             }
                         }).addOnFailureListener(new OnFailureListener() {
@@ -241,6 +247,58 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
 
         dialog.show();
+    }
+
+    @Override
+    public boolean onTouch(View view , MotionEvent motionEvent) {
+        switch (view.getId()){
+            case R.id.txt_forgot_password:
+                ShowDialogForgetPassword(view);
+                return true;
+        }
+        return false;
+    }
+
+    private void ShowDialogForgetPassword(final View view) {
+        AlertDialog.Builder alertdialog = new AlertDialog.Builder(MainActivity.this);
+        alertdialog.setTitle("Quên mật khẩu");
+        alertdialog.setMessage("Hãy cung cấp địa chỉ email");
+        LayoutInflater inflater = LayoutInflater.from(MainActivity.this);
+        View forgot_password_layout = inflater.inflate(R.layout.layout_forget_password, null);
+        final MaterialEditText edtEmail = (MaterialEditText)forgot_password_layout.findViewById(R.id.edt_Email);
+        alertdialog.setView(forgot_password_layout);
+        alertdialog.setPositiveButton("Đặt lại mật khẩu" , new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(final DialogInterface dialogInterface , int i) {
+                final SpotsDialog waitingDialog = new SpotsDialog(MainActivity.this);
+                waitingDialog.show();
+
+                auth.sendPasswordResetEmail(edtEmail.getText().toString().trim()).addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        dialogInterface.dismiss();
+                        waitingDialog.dismiss();
+
+                        Snackbar.make(view, "Đường link thay đổi mật khẩu vừa được gửi. Vui lòng check mail", Snackbar.LENGTH_SHORT).show();
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        dialogInterface.dismiss();
+                        waitingDialog.dismiss();
+
+                        Snackbar.make(view, "Địa chỉ email không tồn tại .. Vui lòng kiểm tra và nhập lại!", Snackbar.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        });
+        alertdialog.setNegativeButton("Hủy" , new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface , int i) {
+                dialogInterface.dismiss();
+            }
+        });
+        alertdialog.show();
     }
 }
 

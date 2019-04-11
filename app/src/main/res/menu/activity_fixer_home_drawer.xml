@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_fix_history"
+            android:title="Lịch sử" />
+        <item
+            android:id="@+id/nav_way_bill"
+            android:title="Phương thức thanh toán" />
+        <item
+            android:id="@+id/nav_change_password"
+            android:title="Thay đổi mật khẩu" />
+        <item
+            android:id="@+id/nav_help"
+            android:title="Một số vấn đề thường gặp" />
+        <item
+            android:id="@+id/nav_settings"
+            android:title="Thiết lập" />
+        <item
+            android:id="@+id/nav_signout"
+            android:title="Đăng xuất" />
+    </group>
+
+</menu>

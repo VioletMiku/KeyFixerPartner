@@ -2,6 +2,7 @@ package com.keyfixer.partner;
 
 import android.Manifest;
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
@@ -12,6 +13,8 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.firebase.geofire.GeoFire;
@@ -44,13 +47,16 @@ import com.keyfixer.partner.Helper.DirectionJSONParser;
 import com.keyfixer.partner.Model.FCMResponse;
 import com.keyfixer.partner.Model.Notification;
 import com.keyfixer.partner.Model.Sender;
+import com.keyfixer.partner.Model.Service;
 import com.keyfixer.partner.Model.Token;
 import com.keyfixer.partner.Remote.IFCMService;
 import com.keyfixer.partner.Remote.IGoogleAPI;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -62,19 +68,24 @@ import retrofit2.Response;
 public class FixerTracking extends FragmentActivity implements OnMapReadyCallback,
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
-        LocationListener {
+        LocationListener, View.OnClickListener {
 
     private GoogleMap mMap;
     IGoogleAPI mService;
     IFCMService ifcmService;
     GeoFire geofire;
     String customerid;
+    Button btnstartfixing;
+    double[] services_fee = {30000, 25000};
+    List<Service> services;
+
     double customerlat, customerlng;
     //play services
     private static final int PLAY_SERVICE_RES_REQUEST = 7001;
 
     private LocationRequest mLocationRequest;
     private GoogleApiClient mGoogleAPiClient;
+    Location fixLocation;
 
     private static int UPDATE_INTERVAL = 5000;
     private static int FASTEST_INTERVAL = 3000;
@@ -99,9 +110,12 @@ public class FixerTracking extends FragmentActivity implements OnMapReadyCallbac
         if (getIntent() != null){
             customerlat = getIntent().getDoubleExtra("lat", -1.0);
             customerlng = getIntent().getDoubleExtra("lng", -1.0);
+            customerid = getIntent().getStringExtra("customerId");
         }
         mService = Common.getGoogleAPI();
         ifcmService = Common.getFCMService();
+        btnstartfixing = (Button) findViewById(R.id.btnstart);
+        btnstartfixing.setOnClickListener(this);
         setupLocation();
     }
 
@@ -115,6 +129,7 @@ public class FixerTracking extends FragmentActivity implements OnMapReadyCallbac
         geoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
             @Override
             public void onKeyEntered(String key , GeoLocation location) {
+                btnstartfixing.setEnabled(true);
                 sendArrivedNotification(customerid);
             }
 
@@ -141,14 +156,15 @@ public class FixerTracking extends FragmentActivity implements OnMapReadyCallbac
     }
 
     private void sendArrivedNotification(String customerid) {
+
         Token token = new Token(customerid);
         Notification notification = new Notification("Đã đến","Thợ sửa bạn đặt đã đến, chúc bạn một ngày vui vẻ!");
         Sender sender = new Sender(token.getToken(), notification);
         ifcmService.sendMessage(sender).enqueue(new Callback<FCMResponse>() {
             @Override
             public void onResponse(Call<FCMResponse> call , Response<FCMResponse> response) {
-                if (response.body().success == 1){
-                    Toast.makeText(FixerTracking.this, "Đã đến", Toast.LENGTH_SHORT).show();
+                if (response.body().success != 1){
+                    Toast.makeText(FixerTracking.this, "Failed", Toast.LENGTH_SHORT).show();
                     finish();
                 }
             }
@@ -280,6 +296,67 @@ public class FixerTracking extends FragmentActivity implements OnMapReadyCallbac
     public void onLocationChanged(Location location) {
         Common.mLastLocation = location;
         displayLocation();
+    }
+
+    @Override
+    public void onClick(View view) {
+        if (btnstartfixing.getText().equals("B Ắ T   Đ Ầ U   S Ử A")){
+            fixLocation = Common.mLastLocation;
+            btnstartfixing.setText("S Ử A   H O À N   T Ấ T");
+        } else if (btnstartfixing.getText().equals("S Ử A   H O À N   T Ấ T")){
+            calculateCashFee(fixLocation, Common.mLastLocation);
+        }
+    }
+
+    private void calculateCashFee(final Location fixLocation, Location mLastLocation) {
+
+        String requestAPI = null;
+
+        try{
+            requestAPI = "https://maps.googleapis.com/maps/api/directions/json?" +
+                    "mode=driving&" +
+                    "transit_routing_preference=less_driving&" +
+                    "origin=" + fixLocation.getLatitude() + "," + fixLocation.getLongitude() + "&" +
+                    "destination=" + mLastLocation.getLatitude() + "," + mLastLocation.getLongitude() + "&" +
+                    "key=" + getResources().getString(R.string.google_direction_api);
+
+            mService.getPath(requestAPI).enqueue(new Callback<String>() {
+                @Override
+                public void onResponse(Call<String> call, Response<String> response) {
+                    try{
+                        JSONObject jsonObject = new JSONObject(response.body().toString());
+                        JSONArray routes = jsonObject.getJSONArray("routes");
+                        JSONObject object = routes.getJSONObject(0);
+                        JSONArray legs = object.getJSONArray("legs");
+                        JSONObject legsObject = legs.getJSONObject(0);
+                        JSONObject distance = legsObject.getJSONObject("distance");
+                        String distance_text = distance.getString("text");
+                        double distance_value = Double.parseDouble(distance_text.replaceAll("[^0-9\\\\.]+",""));
+
+                        Intent intent = new Intent(FixerTracking.this, ServiceDetailActivity.class);
+                        intent.putExtra("start_address", legsObject.getString("start_address"));
+                        intent.putExtra("end_address", legsObject.getString("end_address"));
+                        intent.putExtra("distance", String.valueOf(distance_value));
+                        intent.putExtra("total", Common.formulaPrice(distance_value, services_fee ));
+                        intent.putExtra("location_start",String.format("%f, %f", fixLocation.getLatitude(), fixLocation.getLongitude()));
+                        intent.putExtra("location_end",String.format("%f, %f", Common.mLastLocation.getLatitude(), Common.mLastLocation.getLongitude()));
+                        intent.putExtra("services", (Serializable) services);
+                        startActivity(intent);
+                        finish();
+                    }catch(Exception e){
+                        e.printStackTrace();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<String> call, Throwable t) {
+                    Toast.makeText(FixerTracking.this, "Không thể lấy được đường đi, xin vui lòng thử lại!", Toast.LENGTH_SHORT).show();
+                    System.out.print(t.getMessage());
+                }
+            });
+        }catch (Exception ex){
+            ex.printStackTrace();
+        }
     }
 
     private class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<String, String>>>> {
