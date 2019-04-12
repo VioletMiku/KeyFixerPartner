@@ -41,7 +41,7 @@ public class ServiceDetailActivity extends FragmentActivity implements OnMapRead
         txtTotalFee = (TextView) findViewById(R.id.txtFee);
         txtDistance = (TextView) findViewById(R.id.txtDistance);
         txtDistanceFee = (TextView) findViewById(R.id.txtdistanceFee);
-        txtStartAddress = (TextView) findViewById(R.id.txt_startAđress);
+        txtStartAddress = (TextView) findViewById(R.id.txt_startAddress);
         txtEndAddress = (TextView) findViewById(R.id.txt_endAddress);
         txtVATFee = (TextView) findViewById(R.id.txtVAT);
     }
@@ -70,6 +70,7 @@ public class ServiceDetailActivity extends FragmentActivity implements OnMapRead
             String date = String.format("%s, %d/%d", convertToDayofWeek(calendar.get(Calendar.DAY_OF_WEEK)), calendar.get(Calendar.DAY_OF_MONTH), calendar.get(Calendar.MONTH));
             txtDate.setText(date);
             txtVATFee.setText("" + totalfee*0.4);
+            txtDistance.setText(getData().getDistance() + " meter(s)");
             txtEndAddress.setText(getData().getEndAddress());
             txtStartAddress.setText(getData().getStartAddress());
             txtDistanceFee.setText("" + Double.parseDouble(getData().getDistance())*5);

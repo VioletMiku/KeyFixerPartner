@@ -12,13 +12,15 @@
     <LinearLayout
         android:layout_weight="7"
         android:layout_width="match_parent"
-        android:padding="20dp"
+        android:padding="10dp"
+        android:background="@color/colorAccent"
         android:layout_height="0dp"
         android:orientation="vertical">
         <!--TOP HEADER-->
         <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:background="@android:color/white"
             android:orientation="vertical"
             android:layout_marginTop="40dp"
             android:layout_gravity="center_horizontal">
@@ -26,15 +28,17 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center"
                 android:text="Nice day at Soviet land"
                 android:id="@+id/txtDate"
-                android:textSize="20sp"/>
+                android:textSize="26sp"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="#27aa0b"
                 android:textStyle="bold"
+                android:layout_marginTop="10dp"
                 android:layout_gravity="center_horizontal"
                 android:id="@+id/txtFee"
                 android:text="$200.56"
@@ -45,13 +49,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:layout_margin="10dp">
+            android:layout_marginTop="10dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:background="@android:color/white"
+                android:padding="10dp"
                 android:orientation="vertical"
-                android:padding="5dp"
                 android:layout_weight="1">
 
                 <TextView
@@ -88,7 +93,7 @@
                         android:textSize="24sp"
                         android:text="Từ:"/>
                     <TextView
-                        android:id="@+id/txt_startAđress"
+                        android:id="@+id/txt_startAddress"
                         android:textSize="24sp"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content" />
@@ -115,7 +120,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="5dp"
+                android:background="@android:color/white"
+                android:padding="10dp"
+                android:layout_marginTop="5dp"
                 android:layout_weight="2">
 
                 <TextView
@@ -132,8 +139,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:layout_marginTop="10dp"
-                android:padding="5dp">
+                android:background="@android:color/white"
+                android:padding="10dp"
+                android:layout_marginTop="5dp">
 
                 <TextView
                     android:layout_width="0dp"

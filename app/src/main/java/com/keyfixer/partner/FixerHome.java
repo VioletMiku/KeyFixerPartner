@@ -2,11 +2,13 @@ package com.keyfixer.partner;
 
 import android.Manifest;
 import android.animation.ValueAnimator;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -15,6 +17,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,6 +32,8 @@ import android.view.MenuItem;
 import android.view.animation.LinearInterpolator;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.firebase.geofire.GeoFire;
@@ -56,6 +61,7 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.maps.model.SquareCap;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.EmailAuthProvider;
@@ -66,10 +72,15 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.OnProgressListener;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.keyfixer.partner.Common.Common;
 import com.keyfixer.partner.Model.Token;
 import com.keyfixer.partner.Remote.IGoogleAPI;
 import com.rengwuxian.materialedittext.MaterialEditText;
+import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -79,7 +90,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
+import de.hdodenhof.circleimageview.CircleImageView;
 import dmax.dialog.SpotsDialog;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -127,6 +140,10 @@ public class FixerHome extends AppCompatActivity
 
     //presense system
     DatabaseReference onlineref, currentUserref;
+
+    //Firebase Storage
+    FirebaseStorage firebaseStorage;
+    StorageReference storageReference;
 
     Runnable drawPathRunnable = new Runnable() {
         @Override
@@ -193,6 +210,8 @@ public class FixerHome extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        firebaseStorage = FirebaseStorage.getInstance();
+        storageReference = firebaseStorage.getReference();
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -202,6 +221,15 @@ public class FixerHome extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        View navigationHeaderView = navigationView.getHeaderView(0);
+        TextView txtName = (TextView) navigationHeaderView.findViewById(R.id.txt_FixerName);
+        CircleImageView imageAvatar = (CircleImageView)navigationHeaderView.findViewById(R.id.image_avatar);
+
+        txtName.setText(Common.currentUser.getStrName());
+        if (Common.currentUser.getAvatarUrl() != null && !TextUtils.isEmpty(Common.currentUser.getAvatarUrl())){
+            Picasso.with(this).load(Common.currentUser.getAvatarUrl()).into(imageAvatar);
+        }
 
         //mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -553,6 +581,8 @@ public class FixerHome extends AppCompatActivity
 
         } else if (id == R.id.nav_way_bill) {
 
+        } else if (id == R.id.nav_update_information) {
+            ShowDialogUpdateInfo();
         } else if (id == R.id.nav_change_password) {
             showDialogChangePassword();
         }
@@ -560,6 +590,59 @@ public class FixerHome extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private void ShowDialogUpdateInfo() {
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(FixerHome.this);
+        alertDialog.setTitle("Cập nhật thông tin");
+        alertDialog.setMessage("Vui lòng cung cấp đầy đủ thông tin");
+        LayoutInflater inflater = this.getLayoutInflater();
+        View layout_update_info = inflater.inflate(R.layout.layout_update_information, null);
+        final MaterialEditText edtName = (MaterialEditText) layout_update_info.findViewById(R.id.edt_Name);
+        final MaterialEditText edtPhone = (MaterialEditText) layout_update_info.findViewById(R.id.edt_Phone);
+        final ImageView image_upload = (ImageView) layout_update_info.findViewById(R.id.image_upload);
+        image_upload.setOnClickListener(this);
+        alertDialog.setView(layout_update_info);
+
+        alertDialog.setPositiveButton("Cập nhật" , new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface , int i) {
+                dialogInterface.dismiss();
+                final android.app.AlertDialog waitingDialog = new SpotsDialog(FixerHome.this);
+                waitingDialog.show();
+
+                String name = edtName.getText().toString();
+                String phone = edtPhone.getText().toString();
+
+                Map<String, Object> updateinfo = new HashMap<>();
+                if (!TextUtils.isEmpty(name))
+                    updateinfo.put("strName", name);
+                if (!TextUtils.isEmpty(phone))
+                    updateinfo.put("strPhone", phone);
+
+                DatabaseReference fixerInformation = FirebaseDatabase.getInstance().getReference(Common.fixer_inf_tbl);
+                fixerInformation.child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                        .updateChildren(updateinfo)
+                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                if (task.isSuccessful())
+                                    Toast.makeText(FixerHome.this , "Thông tin cập nhật hoàn tất" , Toast.LENGTH_SHORT).show();
+                                else
+                                    Toast.makeText(FixerHome.this , "Cập nhật thông tin thất bại!" , Toast.LENGTH_SHORT).show();
+
+                                waitingDialog.dismiss();
+                            }
+                        });
+            }
+        });
+        alertDialog.setNegativeButton("Hủy" , new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface , int i) {
+                dialogInterface.dismiss();
+            }
+        });
+        alertDialog.show();
     }
 
     private void showDialogChangePassword() {
@@ -646,7 +729,67 @@ public class FixerHome extends AppCompatActivity
 
     @Override
     public void onClick(View view) {
+        switch (view.getId()){
+            case R.id.image_upload:
+                chooseImage();
+                break;
+        }
+    }
 
+    private void chooseImage() {
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(intent, "Chọn hình đại diện..."), Common.PICK_IMAGE_REQUEST);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode , int resultCode , Intent data) {
+        super.onActivityResult(requestCode , resultCode , data);
+        if (requestCode == Common.PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null){
+            Uri saveuri = data.getData();
+            Log.e("data","" + saveuri.toString());
+            if (saveuri!= null){
+                final ProgressDialog mDialog = new ProgressDialog(this);
+                mDialog.setMessage("Đang tải ... ");
+                mDialog.show();
+
+                String imageName = UUID.randomUUID().toString();
+                Log.e("imagename","" + imageName);
+                final StorageReference imageFolder = storageReference.child("images/" + imageName);
+                imageFolder.putFile(saveuri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        mDialog.dismiss();
+                        imageFolder.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                            @Override
+                            public void onSuccess(Uri uri) {
+                                Map<String, Object> avatarUpdate = new HashMap<>();
+                                avatarUpdate.put("avatarUrl", uri.toString());
+                                Log.e("image","" + uri.toString());
+                                DatabaseReference fixerInformation = FirebaseDatabase.getInstance().getReference(Common.fixer_inf_tbl);
+                                fixerInformation.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).updateChildren(avatarUpdate)
+                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<Void> task) {
+                                                if (task.isSuccessful())
+                                                    Toast.makeText(FixerHome.this , "Tải hoàn tất" , Toast.LENGTH_SHORT).show();
+                                                else
+                                                    Toast.makeText(FixerHome.this , "Tải thất bại" , Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+                            }
+                        });
+                    }
+                }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
+                        double progress = (100.0 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
+                        mDialog.setMessage("Đã tải được " + progress + "%");
+                    }
+                });
+            }
+        }
     }
 
     @Override

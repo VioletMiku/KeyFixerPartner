@@ -9,6 +9,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -217,6 +218,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                     @Override
                                     public void onDataChange(DataSnapshot dataSnapshot) {
                                         Common.currentUser = dataSnapshot.getValue(User.class);
+                                        startActivity(new Intent(MainActivity.this,FixerHome.class));
+                                        finish();
                                     }
 
                                     @Override
@@ -224,9 +227,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                                     }
                                 });
-
-                                startActivity(new Intent(MainActivity.this,FixerHome.class));
-                                finish();
                             }
                         }).addOnFailureListener(new OnFailureListener() {
                     @Override
