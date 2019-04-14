@@ -61,6 +61,7 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.maps.model.SquareCap;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
@@ -224,9 +225,11 @@ public class FixerHome extends AppCompatActivity
 
         View navigationHeaderView = navigationView.getHeaderView(0);
         TextView txtName = (TextView) navigationHeaderView.findViewById(R.id.txt_FixerName);
+        TextView txtStars = (TextView) navigationHeaderView.findViewById(R.id.txt_Stars);
         CircleImageView imageAvatar = (CircleImageView)navigationHeaderView.findViewById(R.id.image_avatar);
 
         txtName.setText(Common.currentUser.getStrName());
+        txtStars.setText(Common.currentUser.getRates());
         if (Common.currentUser.getAvatarUrl() != null && !TextUtils.isEmpty(Common.currentUser.getAvatarUrl())){
             Picasso.with(this).load(Common.currentUser.getAvatarUrl()).into(imageAvatar);
         }
@@ -748,14 +751,12 @@ public class FixerHome extends AppCompatActivity
         super.onActivityResult(requestCode , resultCode , data);
         if (requestCode == Common.PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null){
             Uri saveuri = data.getData();
-            Log.e("data","" + saveuri.toString());
-            if (saveuri!= null){
+            if (saveuri != null){
                 final ProgressDialog mDialog = new ProgressDialog(this);
                 mDialog.setMessage("Đang tải ... ");
                 mDialog.show();
 
                 String imageName = UUID.randomUUID().toString();
-                Log.e("imagename","" + imageName);
                 final StorageReference imageFolder = storageReference.child("images/" + imageName);
                 imageFolder.putFile(saveuri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                     @Override
@@ -764,15 +765,16 @@ public class FixerHome extends AppCompatActivity
                         imageFolder.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                             @Override
                             public void onSuccess(Uri uri) {
+                                Toast.makeText(FixerHome.this , "Đang tải ... " , Toast.LENGTH_SHORT).show();
                                 Map<String, Object> avatarUpdate = new HashMap<>();
                                 avatarUpdate.put("avatarUrl", uri.toString());
-                                Log.e("image","" + uri.toString());
                                 DatabaseReference fixerInformation = FirebaseDatabase.getInstance().getReference(Common.fixer_inf_tbl);
                                 fixerInformation.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).updateChildren(avatarUpdate)
                                         .addOnCompleteListener(new OnCompleteListener<Void>() {
                                             @Override
                                             public void onComplete(@NonNull Task<Void> task) {
                                                 if (task.isSuccessful())
+
                                                     Toast.makeText(FixerHome.this , "Tải hoàn tất" , Toast.LENGTH_SHORT).show();
                                                 else
                                                     Toast.makeText(FixerHome.this , "Tải thất bại" , Toast.LENGTH_SHORT).show();
@@ -786,6 +788,11 @@ public class FixerHome extends AppCompatActivity
                     public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
                         double progress = (100.0 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
                         mDialog.setMessage("Đã tải được " + progress + "%");
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        e.printStackTrace();
                     }
                 });
             }

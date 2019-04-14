@@ -1,7 +1,7 @@
 package com.keyfixer.partner.Model;
 
 public class User {
-    private String strEmail, strPassword, strPhone, strName, avatarUrl;
+    private String strEmail, strPassword, strPhone, strName, avatarUrl, rates;
 
     public User() {
     }
@@ -11,6 +11,14 @@ public class User {
         this.strPassword = strPassword;
         this.strPhone = strPhone;
         this.strName = strName;
+    }
+
+    public String getRates() {
+        return rates;
+    }
+
+    public void setRates(String rates) {
+        this.rates = rates;
     }
 
     public String getAvatarUrl() {

@@ -47,7 +47,9 @@ dependencies {
     implementation 'com.google.android.gms:play-services:10.2.0'
     //added on friday, 29th march 2019
     implementation 'de.hdodenhof:circleimageview:2.2.0'
-    //
+    // hàng tàu khựa, thư viện UX/UI cho việc rating
+    implementation 'me.zhanghai.android.materialratingbar:library:1.2.0'
+    //////////////////////////////////////////////////////////////////////
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'

@@ -176,6 +176,27 @@ public class FixerTracking extends FragmentActivity implements OnMapReadyCallbac
         });
     }
 
+    private void sendFixCompleteNotification(String customerid) {
+
+        Token token = new Token(customerid);
+        Notification notification = new Notification("Sửa xong","Đã sủa xong!");
+        Sender sender = new Sender(token.getToken(), notification);
+        ifcmService.sendMessage(sender).enqueue(new Callback<FCMResponse>() {
+            @Override
+            public void onResponse(Call<FCMResponse> call , Response<FCMResponse> response) {
+                if (response.body().success != 1){
+                    Toast.makeText(FixerTracking.this, "Failed", Toast.LENGTH_SHORT).show();
+                    finish();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<FCMResponse> call , Throwable t) {
+
+            }
+        });
+    }
+
     @Override
     public void onConnected(@Nullable Bundle bundle) {
         displayLocation();
@@ -332,6 +353,8 @@ public class FixerTracking extends FragmentActivity implements OnMapReadyCallbac
                         JSONObject distance = legsObject.getJSONObject("distance");
                         String distance_text = distance.getString("text");
                         double distance_value = Double.parseDouble(distance_text.replaceAll("[^0-9\\\\.]+",""));
+
+                        sendFixCompleteNotification(customerid);
 
                         Intent intent = new Intent(FixerTracking.this, ServiceDetailActivity.class);
                         intent.putExtra("start_address", legsObject.getString("start_address"));
