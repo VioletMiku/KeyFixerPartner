@@ -16,6 +16,8 @@ public class Common {
     public static final String fix_request_tbl = "FixRequest";
     public static final String token_tbl = "Tokens";
     public static final int PICK_IMAGE_REQUEST = 9999;
+    public static final String user_field = "user";
+    public static final String pwd_field = "password";
     private static double house_lock_service = 30000;
     private static double car_lock_service = 25000;
     private static double motorbyke_lock_service = 20000;

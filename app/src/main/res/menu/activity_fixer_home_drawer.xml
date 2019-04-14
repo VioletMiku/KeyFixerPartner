@@ -6,24 +6,31 @@
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/nav_fix_history"
+            android:icon="@drawable/ic_history"
             android:title="Lịch sử" />
         <item
             android:id="@+id/nav_way_bill"
+            android:icon="@drawable/ic_payment"
             android:title="Phương thức thanh toán" />
         <item
             android:id="@+id/nav_change_password"
+            android:icon="@drawable/ic_change_pwd"
             android:title="Thay đổi mật khẩu" />
         <item
             android:id="@+id/nav_help"
+            android:icon="@drawable/ic_problems"
             android:title="Một số vấn đề thường gặp" />
         <item
             android:id="@+id/nav_settings"
+            android:icon="@drawable/ic_settings"
             android:title="Thiết lập" />
         <item
             android:id="@+id/nav_update_information"
+            android:icon="@drawable/ic_information_update"
             android:title="Cập nhật thông tin" />
         <item
             android:id="@+id/nav_signout"
+            android:icon="@drawable/signout"
             android:title="Đăng xuất" />
     </group>
 

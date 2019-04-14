@@ -34,6 +34,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.rengwuxian.materialedittext.MaterialEditText;
 
 import dmax.dialog.SpotsDialog;
+import io.paperdb.Paper;
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
@@ -61,6 +62,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         setContentView(R.layout.activity_main);
 
+        //Init paper
+        Paper.init(this);
         //Init Firebase
         FirebaseApp.initializeApp(this);
         auth = FirebaseAuth.getInstance();
@@ -69,6 +72,52 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         txt_forget_password = (TextView) findViewById(R.id.txt_forgot_password);
         //Init view
         GetButtonControl();
+        //auto login system
+        String user = Paper.book().read(Common.user_field);
+        String pwd = Paper.book().read(Common.pwd_field);
+        if (user != null && pwd != null){
+            if (!TextUtils.isEmpty(user) && !TextUtils.isEmpty(pwd)){
+                autoLogin(user, pwd);
+            }
+        }
+    }
+
+    private void autoLogin(String user , String pwd) {
+
+        final android.app.AlertDialog waiting_dialog = new SpotsDialog(MainActivity.this);
+        waiting_dialog.show();
+        //Login
+        auth.signInWithEmailAndPassword(user, pwd)
+                .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
+                    @Override
+                    public void onSuccess(AuthResult authResult) {
+                        waiting_dialog.dismiss();
+
+                        FirebaseDatabase.getInstance().getReference(Common.fixer_inf_tbl).child(FirebaseAuth
+                                .getInstance().getCurrentUser().getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                Common.currentUser = dataSnapshot.getValue(User.class);
+                                startActivity(new Intent(MainActivity.this,FixerHome.class));
+                                waiting_dialog.dismiss();
+                                finish();
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                waiting_dialog.dismiss();
+                Snackbar.make(welcomeLayout,"Đăng nhập thất bại!",Snackbar.LENGTH_SHORT).show();
+                //set enable button sign in if it failed
+                btnSignIn.setEnabled(true);
+            }
+        });
     }
 
     void GetButtonControl(){
@@ -217,6 +266,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 .getInstance().getCurrentUser().getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
                                     @Override
                                     public void onDataChange(DataSnapshot dataSnapshot) {
+                                        Paper.book().write(Common.user_field, edtEmail.getText().toString());
+                                        Paper.book().write(Common.pwd_field, edtPass.getText().toString());
                                         Common.currentUser = dataSnapshot.getValue(User.class);
                                         startActivity(new Intent(MainActivity.this,FixerHome.class));
                                         finish();

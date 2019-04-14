@@ -95,6 +95,7 @@ import java.util.UUID;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import dmax.dialog.SpotsDialog;
+import io.paperdb.Paper;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -724,6 +725,9 @@ public class FixerHome extends AppCompatActivity
     }
 
     private void Signout() {
+        //reset remember value
+        Paper.init(this);
+        Paper.book().destroy();
         FirebaseAuth.getInstance().signOut();
         Intent intent = new Intent(FixerHome.this, MainActivity.class);
         startActivity(intent);
