@@ -39,14 +39,12 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.keyfixer.partner.Common.Common;
 import com.keyfixer.partner.Helper.DirectionJSONParser;
+import com.keyfixer.partner.Model.DataMessage;
 import com.keyfixer.partner.Model.FCMResponse;
-import com.keyfixer.partner.Model.Notification;
-import com.keyfixer.partner.Model.Sender;
 import com.keyfixer.partner.Model.Service;
 import com.keyfixer.partner.Model.Token;
 import com.keyfixer.partner.Remote.IFCMService;
@@ -60,6 +58,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -79,7 +78,7 @@ public class FixerTracking extends FragmentActivity implements OnMapReadyCallbac
     double[] services_fee = {30000, 25000};
     List<Service> services;
 
-    double customerlat, customerlng;
+    String customerlat, customerlng;
     //play services
     private static final int PLAY_SERVICE_RES_REQUEST = 7001;
 
@@ -108,8 +107,8 @@ public class FixerTracking extends FragmentActivity implements OnMapReadyCallbac
 
     private void Initializing() {
         if (getIntent() != null){
-            customerlat = getIntent().getDoubleExtra("lat", -1.0);
-            customerlng = getIntent().getDoubleExtra("lng", -1.0);
+            customerlat = getIntent().getStringExtra("lat");
+            customerlng = getIntent().getStringExtra("lng");
             customerid = getIntent().getStringExtra("customerId");
         }
         mService = Common.getGoogleAPI();
@@ -122,10 +121,10 @@ public class FixerTracking extends FragmentActivity implements OnMapReadyCallbac
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        customerMarker = mMap.addCircle(new CircleOptions().center(new LatLng(customerlat, customerlng)).radius(50)
-                .strokeColor(Color.BLUE).fillColor(0x220000FF).strokeWidth(5.0f));
+        customerMarker = mMap.addCircle(new CircleOptions().center(new LatLng(Double.parseDouble(customerlat), Double.parseDouble(customerlng)))
+                .radius(50).strokeColor(Color.BLUE).fillColor(0x220000FF).strokeWidth(5.0f));
         geofire = new GeoFire(FirebaseDatabase.getInstance().getReference(Common.fixer_tbl));
-        GeoQuery geoQuery = geofire.queryAtLocation(new GeoLocation(customerlat, customerlng), 0.05f);
+        GeoQuery geoQuery = geofire.queryAtLocation(new GeoLocation(Double.parseDouble(customerlat), Double.parseDouble(customerlng)), 0.05f);
         geoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
             @Override
             public void onKeyEntered(String key , GeoLocation location) {
@@ -158,9 +157,12 @@ public class FixerTracking extends FragmentActivity implements OnMapReadyCallbac
     private void sendArrivedNotification(String customerid) {
 
         Token token = new Token(customerid);
-        Notification notification = new Notification("Đã đến","Thợ sửa bạn đặt đã đến, chúc bạn một ngày vui vẻ!");
-        Sender sender = new Sender(token.getToken(), notification);
-        ifcmService.sendMessage(sender).enqueue(new Callback<FCMResponse>() {
+
+        Map<String, String> content = new HashMap<>();
+        content.put("title","Đã đến");
+        content.put("message","Thợ sửa bạn đặt đã đến, chúc bạn một ngày vui vẻ!");
+        DataMessage dataMessage = new DataMessage(token.getToken(), content);
+        ifcmService.sendMessage(dataMessage).enqueue(new Callback<FCMResponse>() {
             @Override
             public void onResponse(Call<FCMResponse> call , Response<FCMResponse> response) {
                 if (response.body().success != 1){
@@ -179,14 +181,16 @@ public class FixerTracking extends FragmentActivity implements OnMapReadyCallbac
     private void sendFixCompleteNotification(String customerid) {
 
         Token token = new Token(customerid);
-        Notification notification = new Notification("Sửa xong","Đã sủa xong!");
-        Sender sender = new Sender(token.getToken(), notification);
-        ifcmService.sendMessage(sender).enqueue(new Callback<FCMResponse>() {
+
+        Map<String, String> content = new HashMap<>();
+        content.put("title","Sửa xong");
+        content.put("message", customerid);
+        DataMessage dataMessage = new DataMessage(token.getToken(), content);
+        ifcmService.sendMessage(dataMessage).enqueue(new Callback<FCMResponse>() {
             @Override
             public void onResponse(Call<FCMResponse> call , Response<FCMResponse> response) {
                 if (response.body().success != 1){
                     Toast.makeText(FixerTracking.this, "Failed", Toast.LENGTH_SHORT).show();
-                    finish();
                 }
             }
 

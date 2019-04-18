@@ -39,12 +39,12 @@ dependencies {
     //noinspection GradleCompatible
     implementation 'com.rengwuxian.materialedittext:library:2.1.4'
     implementation 'uk.co.chrisjenx:calligraphy:2.3.0'
-    implementation 'com.google.firebase:firebase-database:10.2.0'
-    implementation 'com.google.firebase:firebase-messaging:10.2.0'
-    implementation 'com.google.firebase:firebase-auth:10.2.0'
+    implementation 'com.google.firebase:firebase-database:11.8.0'
+    implementation 'com.google.firebase:firebase-messaging:11.8.0'
+    implementation 'com.google.firebase:firebase-auth:11.8.0'
+    implementation 'com.google.android.gms:play-services-maps:11.8.0'
+    implementation 'com.google.android.gms:play-services:11.8.0'
     implementation 'com.firebase:geofire-android:2.1.2'
-    implementation 'com.google.android.gms:play-services-maps:10.2.0'
-    implementation 'com.google.android.gms:play-services:10.2.0'
     //added on friday, 29th march 2019
     implementation 'de.hdodenhof:circleimageview:2.2.0'
     // hàng tàu khựa, thư viện UX/UI cho việc rating
@@ -53,6 +53,11 @@ dependencies {
     //remember me
     implementation 'io.paperdb:paperdb:2.6'
     //////////////////////////////////////////////////////////////////////
+    //ad :))
+    implementation 'com.android.support:recyclerview-v7:26.1.0' // Required Dependency by Audience Network SDK
+    implementation 'com.facebook.android:audience-network-sdk:5.+'
+    /// user list of facebook account
+    implementation 'com.facebook.android:account-kit-sdk:4.+'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'

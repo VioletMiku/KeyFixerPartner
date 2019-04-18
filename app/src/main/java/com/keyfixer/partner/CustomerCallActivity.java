@@ -1,33 +1,19 @@
 package com.keyfixer.partner;
 
-import android.animation.ValueAnimator;
 import android.content.Intent;
-import android.graphics.Color;
 import android.media.MediaPlayer;
-import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
-import android.view.animation.LinearInterpolator;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.maps.CameraUpdate;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.JointType;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.PolylineOptions;
-import com.google.android.gms.maps.model.SquareCap;
 import com.keyfixer.partner.Common.Common;
+import com.keyfixer.partner.Model.DataMessage;
 import com.keyfixer.partner.Model.FCMResponse;
-import com.keyfixer.partner.Model.Notification;
-import com.keyfixer.partner.Model.Sender;
 import com.keyfixer.partner.Model.Token;
 import com.keyfixer.partner.Remote.IFCMService;
 import com.keyfixer.partner.Remote.IGoogleAPI;
@@ -36,7 +22,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -50,7 +37,7 @@ public class CustomerCallActivity extends AppCompatActivity implements View.OnCl
     IGoogleAPI mservice;
     String customerId = "";
     IFCMService ifcmservice;
-    double lat, lng;
+    String lat, lng;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,14 +64,14 @@ public class CustomerCallActivity extends AppCompatActivity implements View.OnCl
         mediaPlayer.start();
 
         if (getIntent() != null){
-            lat = getIntent().getDoubleExtra("lat",-1.0);
-            lng = getIntent().getDoubleExtra("lng",-1.0);
+            lat = getIntent().getStringExtra("lat");
+            lng = getIntent().getStringExtra("lng");
             customerId = getIntent().getStringExtra("customer");
             getDirection(lat, lng);
         }
     }
 
-    private void getDirection(double lat, double lng) {
+    private void getDirection(String lat, String lng) {
         String requestAPI = null;
 
         try{
@@ -136,20 +123,23 @@ public class CustomerCallActivity extends AppCompatActivity implements View.OnCl
 
     @Override
     protected void onStop() {
-        mediaPlayer.release();
+        if (mediaPlayer.isPlaying())
+            mediaPlayer.release();
         super.onStop();
     }
 
     @Override
     protected void onPause() {
-        mediaPlayer.release();
+        if (mediaPlayer.isPlaying())
+            mediaPlayer.pause();
         super.onPause();
     }
 
     @Override
     protected void onResume(){
         super.onResume();
-        mediaPlayer.start();
+        if (mediaPlayer != null && !mediaPlayer.isPlaying())
+            mediaPlayer.start();
     }
 
     @Override
@@ -173,9 +163,12 @@ public class CustomerCallActivity extends AppCompatActivity implements View.OnCl
 
     private void cancelBooking(String customerId) {
         Token token = new Token(customerId);
-        Notification notification = new Notification("Thông báo hủy từ thợ sửa khóa!","Xin lỗi, mình có việc bận");
-        Sender sender = new Sender(token.getToken(), notification);
-        ifcmservice.sendMessage(sender).enqueue(new Callback<FCMResponse>() {
+
+        Map<String, String> content = new HashMap<>();
+        content.put("title","Thông báo!");
+        content.put("message","Thợ đã hủy yêu cầu");
+        DataMessage dataMessage = new DataMessage(token.getToken(), content);
+        ifcmservice.sendMessage(dataMessage).enqueue(new Callback<FCMResponse>() {
             @Override
             public void onResponse(Call<FCMResponse> call, Response<FCMResponse> response) {
                 if (response.body().success == 1){

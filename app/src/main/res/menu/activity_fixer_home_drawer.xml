@@ -13,10 +13,6 @@
             android:icon="@drawable/ic_payment"
             android:title="Phương thức thanh toán" />
         <item
-            android:id="@+id/nav_change_password"
-            android:icon="@drawable/ic_change_pwd"
-            android:title="Thay đổi mật khẩu" />
-        <item
             android:id="@+id/nav_help"
             android:icon="@drawable/ic_problems"
             android:title="Một số vấn đề thường gặp" />

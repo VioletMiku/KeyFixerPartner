@@ -36,35 +36,27 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="20dp"
         android:layout_marginBottom="20dp"
-        android:text="Quên mật khẩu? Nhấn vào đây"
+        android:text="(c) 2019 by VuAnh"
         android:textSize="12sp"
         android:textAlignment="center"
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"
         android:textColor="@color/bottomtext"/>
+    <!--android:text="Quên mật khẩu? Nhấn vào đây"-->
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:weightSum="2"
+        android:weightSum="1"
         android:layout_above="@id/txt_forgot_password"
         android:layout_margin="16dp">
         <Button
             android:background="@color/btnSignin"
-            android:id="@+id/btn_signin"
+            android:id="@+id/btn_Continue"
             android:textColor="@android:color/white"
-            android:text="Đ Ă N G   N H Ậ P"
+            android:text="T I Ế P   T Ụ C"
             android:layout_marginRight="6dp"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content" />
-        <Button
-            android:background="@color/btnRegister"
-            android:id="@+id/btn_register"
-            android:textColor="@android:color/white"
-            android:text="Đ Ă N G   K Ý"
-            android:layout_marginLeft="6dp"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content" />

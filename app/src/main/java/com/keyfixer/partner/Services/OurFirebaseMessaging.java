@@ -8,17 +8,26 @@ import com.google.firebase.messaging.RemoteMessage;
 import com.google.gson.Gson;
 import com.keyfixer.partner.CustomerCallActivity;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class OurFirebaseMessaging extends FirebaseMessagingService {
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
         //Because of sending the firebase message with contain lat and lng from customer app
         //so we're going to convert message to Latng
-        LatLng customer_location = new Gson().fromJson(remoteMessage.getNotification().getBody(), LatLng.class);
-        Intent intent = new Intent(getBaseContext(), CustomerCallActivity.class);
-        intent.putExtra("lat", customer_location.latitude);
-        intent.putExtra("lng", customer_location.longitude);
-        intent.putExtra("customer", remoteMessage.getNotification().getTitle());
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(intent);
+        if (remoteMessage.getData() != null) {
+            Map<String, String> data = remoteMessage.getData();
+            String customer = data.get("customer");
+            String lat = data.get("lat");
+            String lng = data.get("lng");
+
+            Intent intent = new Intent(getBaseContext() , CustomerCallActivity.class);
+            intent.putExtra("lat" , lat);
+            intent.putExtra("lng" , lng);
+            intent.putExtra("customer" , customer);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+        }
     }
 }

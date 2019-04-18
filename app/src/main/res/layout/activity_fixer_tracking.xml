@@ -4,22 +4,30 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/black"
     tools:context=".FixerTracking">
 
-    <fragment
-        android:id="@+id/map"
-        android:name="com.google.android.gms.maps.SupportMapFragment"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
-    <Button
-        android:id="@+id/btnstart"
-        android:layout_margin="5dp"
-        android:enabled="false"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:text="B Ắ T   Đ Ầ U   S Ử A"
-        android:textStyle="bold"
-        android:textColor="@android:color/white"
-        android:background="@android:color/holo_blue_dark"/>
+        android:layout_height="match_parent"
+        android:background="@drawable/corner"
+        android:layout_margin="5dp">
+
+        <fragment
+            android:id="@+id/map"
+            android:name="com.google.android.gms.maps.SupportMapFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+        <Button
+            android:id="@+id/btnstart"
+            android:layout_margin="5dp"
+            android:enabled="false"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:text="B Ắ T   Đ Ầ U   S Ử A"
+            android:textStyle="bold"
+            android:textColor="@android:color/white"
+            android:background="@android:color/holo_blue_dark"/>
+    </RelativeLayout>
 </RelativeLayout>
