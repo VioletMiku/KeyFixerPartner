@@ -11,6 +11,7 @@ import com.keyfixer.partner.Remote.RetrofitClient;
 public class Common {
 
     public static String used_service = "";
+    public static boolean isFreeForDistanceFee = true;
     public static final String fixer_tbl = "Fixers";
     public static final String fixer_inf_tbl = "Users";
     public static final String customer_tbl = "Customers";

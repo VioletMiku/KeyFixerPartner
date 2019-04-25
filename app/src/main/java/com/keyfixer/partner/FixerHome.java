@@ -248,7 +248,9 @@ public class FixerHome extends AppCompatActivity
             @Override
             public void onSuccess(Account account) {
                 onlineref = FirebaseDatabase.getInstance().getReference().child("info/connected");
-                currentUserref = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl).child(account.getId());
+                currentUserref = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl)
+                        .child(Common.currentFixer.getServiceType())
+                        .child(account.getId());
                 Common.FixerID = account.getId();
                 onlineref.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
@@ -724,7 +726,7 @@ public class FixerHome extends AppCompatActivity
 
                 AccountKit.getCurrentAccount(new AccountKitCallback<Account>() {
                     @Override
-                    public void onSuccess(Account account) {
+                    public void onSuccess(final Account account) {
 
                         Map<String, Object> updateinfo = new HashMap<>();
                         if (rdHome.isChecked())
@@ -740,9 +742,13 @@ public class FixerHome extends AppCompatActivity
                                 .addOnCompleteListener(new OnCompleteListener<Void>() {
                                     @Override
                                     public void onComplete(@NonNull Task<Void> task) {
-                                        if (task.isSuccessful())
+                                        if (task.isSuccessful()) {
+                                            currentUserref = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl)
+                                                    .child(Common.currentFixer.getServiceType())
+                                                    .child(account.getId());
                                             //Toast.makeText(FixerHome.this , "Thông tin cập nhật hoàn tất" , Toast.LENGTH_SHORT).show();
-                                            Log.e("Choose servie alert", "Choose successful");
+                                            Log.e("Choose servie alert" , "Choose successful");
+                                        }
                                         else
                                             //Toast.makeText(FixerHome.this , "Cập nhật thông tin thất bại!" , Toast.LENGTH_SHORT).show();
                                             Log.e("Choose servie alert", "Choose failed");
