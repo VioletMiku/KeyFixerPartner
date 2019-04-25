@@ -14,8 +14,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
@@ -35,6 +33,7 @@ import android.view.animation.LinearInterpolator;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -45,12 +44,9 @@ import com.facebook.accountkit.AccountKitError;
 import com.firebase.geofire.GeoFire;
 import com.firebase.geofire.GeoLocation;
 import com.github.glomadrian.materialanimatedswitch.MaterialAnimatedSwitch;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
@@ -73,9 +69,6 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthCredential;
-import com.google.firebase.auth.EmailAuthProvider;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -87,6 +80,7 @@ import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.keyfixer.partner.Common.Common;
+import com.keyfixer.partner.Model.Fixer;
 import com.keyfixer.partner.Model.Token;
 import com.keyfixer.partner.Remote.IGoogleAPI;
 import com.rengwuxian.materialedittext.MaterialEditText;
@@ -104,7 +98,6 @@ import java.util.UUID;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import dmax.dialog.SpotsDialog;
-import io.paperdb.Paper;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -131,14 +124,15 @@ public class FixerHome extends AppCompatActivity
     DatabaseReference fixers;
     GeoFire geoFire;
     Marker mCurrent;
-    MaterialAnimatedSwitch location_switch;
+    //MaterialAnimatedSwitch location_switch;
     SupportMapFragment mapFragment;
+    ImageView gpson, gpsoff;
 
     //car animation ... :3
     private List<LatLng> Lo_trinh;
     private Marker carMarker;
     private float v;
-    private double lat,lng;
+    private double lat, lng;
     private Handler handler;
     private LatLng startPosition, endPosition, currentPosition;
     private int index, next;
@@ -158,57 +152,54 @@ public class FixerHome extends AppCompatActivity
     Runnable drawPathRunnable = new Runnable() {
         @Override
         public void run() {
-            if (index < Lo_trinh.size()-1){
+            if (index < Lo_trinh.size() - 1) {
                 index++;
                 next = index + 1;
             }
-            if (index < Lo_trinh.size()-1){
+            if (index < Lo_trinh.size() - 1) {
                 startPosition = Lo_trinh.get(index);
                 endPosition = Lo_trinh.get(next);
             }
 
-            final ValueAnimator valueAnimator = ValueAnimator.ofFloat(0, 1);
+            final ValueAnimator valueAnimator = ValueAnimator.ofFloat(0 , 1);
             valueAnimator.setDuration(3000);
             valueAnimator.setInterpolator(new LinearInterpolator());
             valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                 @Override
                 public void onAnimationUpdate(ValueAnimator animation) {
-                    try{
+                    try {
                         v = valueAnimator.getAnimatedFraction();
-                        lng = v*endPosition.longitude+(1-v)*startPosition.longitude;
-                        lat = v*endPosition.latitude +(1-v)*startPosition.latitude;
-                        LatLng newPos = new LatLng(lat,lng);
+                        lng = v * endPosition.longitude + (1 - v) * startPosition.longitude;
+                        lat = v * endPosition.latitude + (1 - v) * startPosition.latitude;
+                        LatLng newPos = new LatLng(lat , lng);
                         carMarker.setPosition(newPos);
-                        carMarker.setAnchor(0.5f, 0.5f);
-                        carMarker.setRotation(getBearing(startPosition, newPos));
+                        carMarker.setAnchor(0.5f , 0.5f);
+                        carMarker.setRotation(getBearing(startPosition , newPos));
                         mMap.moveCamera(CameraUpdateFactory.newCameraPosition(
                                 new CameraPosition.Builder().target(newPos).zoom(15.5f).build()
                         ));
-                    }catch(NullPointerException NPex){
-                        Toast.makeText(FixerHome.this, "NullPointerException!", Toast.LENGTH_SHORT).show();
+                    } catch (NullPointerException NPex) {
+                        Toast.makeText(FixerHome.this , "NullPointerException!" , Toast.LENGTH_SHORT).show();
                     }
                 }
             });
             valueAnimator.start();
-            handler.postDelayed(this, 3000);
+            handler.postDelayed(this , 3000);
         }
     };
 
-    private float getBearing(LatLng startPosition, LatLng endPosition) {
+    private float getBearing(LatLng startPosition , LatLng endPosition) {
         double lat = Math.abs(startPosition.latitude - endPosition.latitude);
         double lng = Math.abs(startPosition.longitude - endPosition.longitude);
 
-        if (startPosition.longitude < endPosition.longitude && startPosition.latitude < endPosition.latitude){
-            return (float) (Math.toDegrees(Math.atan(lng/lat)));
-        }
-        else if (startPosition.longitude < endPosition.longitude && startPosition.latitude >= endPosition.latitude){
-            return (float) ((90 - Math.toDegrees(Math.atan(lng/lat))) + 90);
-        }
-        else if (startPosition.longitude >= endPosition.longitude && startPosition.latitude >= endPosition.latitude){
-            return (float) (Math.toDegrees(Math.atan(lng/lat)) + 180);
-        }
-        else if (startPosition.longitude >= endPosition.longitude && startPosition.latitude < endPosition.latitude){
-            return (float) ((90 - Math.toDegrees(Math.atan(lng/lat))) + 270);
+        if (startPosition.longitude < endPosition.longitude && startPosition.latitude < endPosition.latitude) {
+            return (float) (Math.toDegrees(Math.atan(lng / lat)));
+        } else if (startPosition.longitude < endPosition.longitude && startPosition.latitude >= endPosition.latitude) {
+            return (float) ((90 - Math.toDegrees(Math.atan(lng / lat))) + 90);
+        } else if (startPosition.longitude >= endPosition.longitude && startPosition.latitude >= endPosition.latitude) {
+            return (float) (Math.toDegrees(Math.atan(lng / lat)) + 180);
+        } else if (startPosition.longitude >= endPosition.longitude && startPosition.latitude < endPosition.latitude) {
+            return (float) ((90 - Math.toDegrees(Math.atan(lng / lat))) + 270);
         }
         return -1;
     }
@@ -237,14 +228,16 @@ public class FixerHome extends AppCompatActivity
         View navigationHeaderView = navigationView.getHeaderView(0);
         TextView txtName = (TextView) navigationHeaderView.findViewById(R.id.txt_FixerName);
         TextView txtStars = (TextView) navigationHeaderView.findViewById(R.id.txt_Stars);
-        CircleImageView imageAvatar = (CircleImageView)navigationHeaderView.findViewById(R.id.image_avatar);
+        CircleImageView imageAvatar = (CircleImageView) navigationHeaderView.findViewById(R.id.image_avatar);
 
-        txtName.setText(Common.currentUser.getStrName());
-        txtStars.setText(Common.currentUser.getRates());
-        if (Common.currentUser.getAvatarUrl() != null && !TextUtils.isEmpty(Common.currentUser.getAvatarUrl())){
-            Picasso.with(this).load(Common.currentUser.getAvatarUrl()).into(imageAvatar);
+        txtName.setText(Common.currentFixer.getStrName());
+        txtStars.setText(Common.currentFixer.getRates());
+        if (Common.currentFixer.getAvatarUrl() != null && !TextUtils.isEmpty(Common.currentFixer.getAvatarUrl())) {
+            Picasso.with(this).load(Common.currentFixer.getAvatarUrl()).into(imageAvatar);
         }
 
+        //set service type for cal the fee
+        Common.used_service = Common.currentFixer.getServiceType();
         //mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -256,6 +249,7 @@ public class FixerHome extends AppCompatActivity
             public void onSuccess(Account account) {
                 onlineref = FirebaseDatabase.getInstance().getReference().child("info/connected");
                 currentUserref = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl).child(account.getId());
+                Common.FixerID = account.getId();
                 onlineref.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
@@ -276,8 +270,58 @@ public class FixerHome extends AppCompatActivity
             }
         });
         //init view
-        location_switch = (MaterialAnimatedSwitch) findViewById(R.id.location_switch);
-        location_switch.setOnCheckedChangeListener(new MaterialAnimatedSwitch.OnCheckedChangeListener() {
+        gpson = (ImageView) findViewById(R.id.gps_on);
+        gpsoff = (ImageView) findViewById(R.id.gps_off);
+        //location_switch = (MaterialAnimatedSwitch) findViewById(R.id.location_switch);
+        gpsoff.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                gpsoff.setVisibility(View.INVISIBLE);
+                gpson.setVisibility(View.VISIBLE);
+                FirebaseDatabase.getInstance().goOnline();//set connected when the fixer comeback
+                buildLocationCallback();
+                buildLocationRequest();
+                if (ActivityCompat.checkSelfPermission(FixerHome.this , Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                        && ActivityCompat.checkSelfPermission(FixerHome.this , Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    // TODO: Consider calling
+                    //    ActivityCompat#requestPermissions
+                    // here to request the missing permissions, and then overriding
+                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                    //                                          int[] grantResults)
+                    // to handle the case where the user grants the permission. See the documentation
+                    // for ActivityCompat#requestPermissions for more details.
+                    return;
+                }
+                fusedLocationProviderClient.requestLocationUpdates(mLocationRequest , locationCallback , Looper.myLooper());
+
+                //geo fire
+                fixers = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl).child(Common.currentFixer.getServiceType());
+                geoFire = new GeoFire(fixers);
+
+                displayLocation();
+                Snackbar.make(mapFragment.getView() , "Bạn đang online" , Snackbar.LENGTH_SHORT).show();
+            }
+        });
+        gpson.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                gpson.setVisibility(View.INVISIBLE);
+                gpsoff.setVisibility(View.VISIBLE);
+                try {
+                    FirebaseDatabase.getInstance().goOffline();//set disconnected when the fixer leave
+                    fusedLocationProviderClient.removeLocationUpdates(locationCallback);
+                    mCurrent.remove();
+                    mMap.clear();
+                    if (handler != null)
+                        handler.removeCallbacks(drawPathRunnable);
+                    Snackbar.make(mapFragment.getView() , "Bạn đang offline" , Snackbar.LENGTH_SHORT).show();
+                } catch (NullPointerException ex) {
+                    Toast.makeText(FixerHome.this , "Vui lòng bật GPS rồi thử lại !" , Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+        /*
+        * location_switch.setOnCheckedChangeListener(new MaterialAnimatedSwitch.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(boolean isOnline) {
                 if (isOnline){
@@ -303,9 +347,7 @@ public class FixerHome extends AppCompatActivity
                 }
             }
         });
-        //geo fire
-        fixers = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl);
-        geoFire = new GeoFire(fixers);
+        * */
         setupLocation();
 
         mService = Common.getGoogleAPI();
@@ -330,10 +372,10 @@ public class FixerHome extends AppCompatActivity
     }
 
     private void getDirection() {
-        currentPosition = new LatLng(Common.mLastLocation.getLatitude(), Common.mLastLocation.getLongitude());
+        currentPosition = new LatLng(Common.mLastLocation.getLatitude() , Common.mLastLocation.getLongitude());
         String requestAPI = null;
 
-        try{
+        try {
             requestAPI = "https://maps.googleapis.com/maps/api/directions/json?" +
                     "mode=driving&" +
                     "transit_routing_preference=less_driving&" +
@@ -341,14 +383,14 @@ public class FixerHome extends AppCompatActivity
                     "destination=" + destination + "&" +
                     "key=" + getResources().getString(R.string.google_direction_api);
 
-            Log.d("MikuRoot", requestAPI); //print url to debug
+            Log.d("MikuRoot" , requestAPI); //print url to debug
             mService.getPath(requestAPI).enqueue(new Callback<String>() {
                 @Override
-                public void onResponse(Call<String> call, Response<String> response) {
-                    try{
+                public void onResponse(Call<String> call , Response<String> response) {
+                    try {
                         JSONObject jsonObject = new JSONObject(response.body().toString());
                         JSONArray jsonArray = jsonObject.getJSONArray("routes");
-                        for (int i = 0 ; i < jsonArray.length() ; i++){
+                        for (int i = 0; i < jsonArray.length(); i++) {
                             JSONObject route = jsonArray.getJSONObject(i);
                             JSONObject poly = route.getJSONObject("overview_polyline");
                             String polyLine = poly.getString("points");
@@ -356,11 +398,11 @@ public class FixerHome extends AppCompatActivity
                         }
                         //adjusting bounds
                         LatLngBounds.Builder builder = new LatLngBounds.Builder();
-                        for (LatLng latlng:Lo_trinh){
+                        for (LatLng latlng : Lo_trinh) {
                             builder.include(latlng);
                         }
                         LatLngBounds bounds = builder.build();
-                        CameraUpdate mCameraUpdate = CameraUpdateFactory.newLatLngBounds(bounds,2);
+                        CameraUpdate mCameraUpdate = CameraUpdateFactory.newLatLngBounds(bounds , 2);
                         mMap.animateCamera(mCameraUpdate);
 
                         polylineOptions = new PolylineOptions();
@@ -385,17 +427,17 @@ public class FixerHome extends AppCompatActivity
                                 .title("Nơi sửa"));
 
                         //Animation
-                        ValueAnimator polyLineAnimator = ValueAnimator.ofInt(0,100);
+                        ValueAnimator polyLineAnimator = ValueAnimator.ofInt(0 , 100);
                         polyLineAnimator.setDuration(2000);
                         polyLineAnimator.setInterpolator(new LinearInterpolator());
                         polyLineAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                             @Override
                             public void onAnimationUpdate(ValueAnimator animation) {
                                 List<LatLng> points = grayPolyline.getPoints();
-                                int percentValue = (int)animation.getAnimatedValue();
+                                int percentValue = (int) animation.getAnimatedValue();
                                 int size = points.size();
-                                int newPoints = (int)(size * (percentValue/100.0f));
-                                List<LatLng> point = points.subList(0, newPoints);
+                                int newPoints = (int) (size * (percentValue / 100.0f));
+                                List<LatLng> point = points.subList(0 , newPoints);
                                 blackPolyline.setPoints(point);
                             }
                         });
@@ -408,23 +450,37 @@ public class FixerHome extends AppCompatActivity
                         handler = new Handler();
                         index = -1;
                         next = 1;
-                        handler.postDelayed(drawPathRunnable, 3000);
+                        handler.postDelayed(drawPathRunnable , 3000);
 
-                    }catch(JSONException e){
+                    } catch (JSONException e) {
                         e.printStackTrace();
                     }
                 }
 
                 @Override
-                public void onFailure(Call<String> call, Throwable t) {
-                    Toast.makeText(FixerHome.this, "Không thể lấy được đường đi, xin vui lòng thử lại!", Toast.LENGTH_SHORT).show();
+                public void onFailure(Call<String> call , Throwable t) {
+                    Toast.makeText(FixerHome.this , "Không thể lấy được đường đi, xin vui lòng thử lại!" , Toast.LENGTH_SHORT).show();
                     System.out.print(t.getMessage());
                 }
             });
-        }catch (Exception ex){
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
+/*
+*
+    @Override
+    protected void onStop() {
+
+        FirebaseDatabase.getInstance().goOffline();//set disconnected when the fixer leave
+        fusedLocationProviderClient.removeLocationUpdates(locationCallback);
+        mCurrent.remove();
+        mMap.clear();
+        if (handler != null)
+            handler.removeCallbacks(drawPathRunnable);
+        super.onStop();
+    }
+* */
 
     private List decodePoly(String encoded) {
 
@@ -452,7 +508,7 @@ public class FixerHome extends AppCompatActivity
             int dlng = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
             lng += dlng;
 
-            LatLng p = new LatLng((((double) lat / 1E5)),
+            LatLng p = new LatLng((((double) lat / 1E5)) ,
                     (((double) lng / 1E5)));
             poly.add(p);
         }
@@ -461,13 +517,13 @@ public class FixerHome extends AppCompatActivity
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode){
+    public void onRequestPermissionsResult(int requestCode , @NonNull String[] permissions , @NonNull int[] grantResults) {
+        switch (requestCode) {
             case MY_PERMISSION_REQUEST_CODE:
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     buildLocationCallback();
                     buildLocationRequest();
-                    if (location_switch.isChecked()){
+                    if (gpson.getVisibility() == View.VISIBLE) {
                         displayLocation();
                     }
                 }
@@ -476,28 +532,31 @@ public class FixerHome extends AppCompatActivity
     }
 
     private void setupLocation() {
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+        if (ActivityCompat.checkSelfPermission(this , android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this , android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             //Request runtime permission
-            ActivityCompat.requestPermissions(this, new String[]{
-                    android.Manifest.permission.ACCESS_COARSE_LOCATION,
+            ActivityCompat.requestPermissions(this , new String[]{
+                    android.Manifest.permission.ACCESS_COARSE_LOCATION ,
                     android.Manifest.permission.ACCESS_FINE_LOCATION
-            },MY_PERMISSION_REQUEST_CODE);
-        }
-        else{
+            } , MY_PERMISSION_REQUEST_CODE);
+        } else {
             buildLocationCallback();
             buildLocationRequest();
-            if (location_switch.isChecked()){
+            if (gpson.getVisibility() == View.VISIBLE) {
+                //geo fire
+                fixers = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl).child(Common.currentFixer.getServiceType());
+                geoFire = new GeoFire(fixers);
+
                 displayLocation();
             }
         }
     }
 
     private void buildLocationCallback() {
-        locationCallback = new LocationCallback(){
+        locationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult locationResult) {
-                for (Location location:locationResult.getLocations())
+                for (Location location : locationResult.getLocations())
                     Common.mLastLocation = location;
                 displayLocation();
             }
@@ -513,32 +572,32 @@ public class FixerHome extends AppCompatActivity
     }
 
     private void displayLocation() {
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+        if (ActivityCompat.checkSelfPermission(this , android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this , Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
         fusedLocationProviderClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
             @Override
             public void onSuccess(Location location) {
                 Common.mLastLocation = location;
-                if (Common.mLastLocation != null){//co bug cho nay _ mlastLocation = null
-                    if (location_switch.isChecked()){
+                if (Common.mLastLocation != null) {//co bug cho nay _ mlastLocation = null
+                    if (gpson.getVisibility() == View.VISIBLE) {
                         final double latitude = Common.mLastLocation.getLatitude();
                         final double longtitude = Common.mLastLocation.getLongitude();
                         //Update to firebase
                         AccountKit.getCurrentAccount(new AccountKitCallback<Account>() {
                             @Override
                             public void onSuccess(Account account) {
-                                geoFire.setLocation(account.getId(), new GeoLocation(latitude, longtitude), new GeoFire.CompletionListener() {
+                                geoFire.setLocation(account.getId() , new GeoLocation(latitude , longtitude) , new GeoFire.CompletionListener() {
                                     @Override
-                                    public void onComplete(String key, DatabaseError error) {
+                                    public void onComplete(String key , DatabaseError error) {
                                         //Add marker
-                                        if (mCurrent != null){
+                                        if (mCurrent != null) {
                                             mCurrent.remove(); //remove already marker
                                         }
-                                        mCurrent = mMap.addMarker(new MarkerOptions().position(new LatLng(latitude,longtitude)).title("Bạn"));
+                                        mCurrent = mMap.addMarker(new MarkerOptions().position(new LatLng(latitude , longtitude)).title("Bạn"));
                                         //Move camera to this position
-                                        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude,longtitude),15.0f));
+                                        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude , longtitude) , 15.0f));
 
                                     }
                                 });
@@ -550,9 +609,8 @@ public class FixerHome extends AppCompatActivity
                             }
                         });
                     }
-                }
-                else{
-                    Log.d("Ối!", "Không thể xác định được vị trí của fixer");
+                } else {
+                    Log.d("Ối!" , "Không thể xác định được vị trí của fixer");
                 }
             }
         });
@@ -594,16 +652,10 @@ public class FixerHome extends AppCompatActivity
 
         if (id == R.id.nav_fix_history) {
             // Handle the camera action
-        } else if (id == R.id.nav_help) {
-
-        } else if (id == R.id.nav_settings) {
-
+        } else if (id == R.id.nav_servicetype) {
+            ShowDialogupdateServiceType();
         } else if (id == R.id.nav_signout) {
             Signout();
-        } else if (id == R.id.nav_view) {
-
-        } else if (id == R.id.nav_way_bill) {
-
         } else if (id == R.id.nav_update_information) {
             ShowDialogUpdateInfo();
         }
@@ -613,12 +665,127 @@ public class FixerHome extends AppCompatActivity
         return true;
     }
 
+    private void ShowDialogupdateServiceType() {
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(FixerHome.this);
+        alertDialog.setTitle("Loại dịch vụ");
+        alertDialog.setMessage("Vui lòng chọn dịch vụ hôm nay bạn muốn sửa");
+        LayoutInflater inflater = this.getLayoutInflater();
+        View service_type = inflater.inflate(R.layout.layout_update_service_type , null);
+
+        final RadioButton rdHome = (RadioButton) service_type.findViewById(R.id.rd_home);
+        final RadioButton rdCar = (RadioButton) service_type.findViewById(R.id.rd_car);
+        final RadioButton rdMotorbike = (RadioButton) service_type.findViewById(R.id.rd_motorbike);
+
+        if (Common.currentFixer.getServiceType().equals("S ử a   k h ó a   n h à")) {
+            rdHome.setChecked(true);
+            Common.used_service = "S ử a   k h ó a   n h à";
+            try{
+                DatabaseReference carservice = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl).getRoot().child("S ử a   k h ó a   x e   h ơ i").child(Common.FixerID);
+                DatabaseReference motorservice = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl).getRoot().child("S ử a   k h ó a   x e   g ắ n   m á y").child(Common.FixerID);
+                carservice.setValue(null);
+                motorservice.setValue(null);
+            }catch (Exception ex){
+                Log.e("Exception when remove id from house", "" + ex.getMessage() + " \n-- caused by: " + ex.getCause());
+            }
+        } else if (Common.currentFixer.getServiceType().equals("S ử a   k h ó a   x e   h ơ i")) {
+            rdCar.setChecked(true);
+            Common.used_service = "S ử a   k h ó a   x e   h ơ i";
+            try{
+                DatabaseReference houseservice = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl).getRoot().child("S ử a   k h ó a   n h à").child(Common.FixerID);
+                DatabaseReference motorservice = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl).getRoot().child("S ử a   k h ó a   x e   g ắ n   m á y").child(Common.FixerID);
+                houseservice.setValue(null);
+                motorservice.setValue(null);
+
+            }catch (Exception ex){
+                Log.e("Exception when remove id from car", "" + ex.getMessage() + " \n-- caused by: " + ex.getCause());
+            }
+        } else if (Common.currentFixer.getServiceType().equals("S ử a   k h ó a   x e   g ắ n   m á y")) {
+            rdMotorbike.setChecked(true);
+            Common.used_service = "S ử a   k h ó a   x e   g ắ n   m á y";
+            try{
+                DatabaseReference houseservice = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl).getRoot().child("S ử a   k h ó a   n h à").child(Common.FixerID);
+                DatabaseReference carservice = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl).getRoot().child("S ử a   k h ó a   x e   h ơ i").child(Common.FixerID);
+                houseservice.setValue(null);
+                carservice.setValue(null);
+
+            }catch (Exception ex){
+                Log.e("Exception when remove id from motorbike", "" + ex.getMessage() + " \n-- caused by: " + ex.getCause());
+            }
+        }
+
+        alertDialog.setView(service_type);
+
+        alertDialog.setPositiveButton("Cập nhật" , new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface , int i) {
+                dialogInterface.dismiss();
+                final android.app.AlertDialog waitingDialog = new SpotsDialog(FixerHome.this);
+                waitingDialog.show();
+
+                AccountKit.getCurrentAccount(new AccountKitCallback<Account>() {
+                    @Override
+                    public void onSuccess(Account account) {
+
+                        Map<String, Object> updateinfo = new HashMap<>();
+                        if (rdHome.isChecked())
+                            updateinfo.put("serviceType", "" + rdHome.getText().toString());
+                        else if (rdCar.isChecked())
+                            updateinfo.put("serviceType", "" + rdCar.getText().toString());
+                        else if (rdMotorbike.isChecked())
+                            updateinfo.put("serviceType", "" + rdMotorbike.getText().toString());
+
+                        DatabaseReference fixerInformation = FirebaseDatabase.getInstance().getReference(Common.fixer_inf_tbl);
+                        fixerInformation.child(account.getId())
+                                .updateChildren(updateinfo)
+                                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task) {
+                                        if (task.isSuccessful())
+                                            //Toast.makeText(FixerHome.this , "Thông tin cập nhật hoàn tất" , Toast.LENGTH_SHORT).show();
+                                            Log.e("Choose servie alert", "Choose successful");
+                                        else
+                                            //Toast.makeText(FixerHome.this , "Cập nhật thông tin thất bại!" , Toast.LENGTH_SHORT).show();
+                                            Log.e("Choose servie alert", "Choose failed");
+
+                                        waitingDialog.dismiss();
+                                    }
+                                });
+
+                        fixerInformation.child(account.getId()).addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                Common.currentFixer = dataSnapshot.getValue(Fixer.class);
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onError(AccountKitError accountKitError) {
+
+                    }
+                });
+            }
+        });
+        alertDialog.setNegativeButton("Hủy" , new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface , int i) {
+                dialogInterface.dismiss();
+            }
+        });
+        alertDialog.show();
+    }
+
     private void ShowDialogUpdateInfo() {
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(FixerHome.this);
         alertDialog.setTitle("Cập nhật thông tin");
         alertDialog.setMessage("Vui lòng cung cấp đầy đủ thông tin");
         LayoutInflater inflater = this.getLayoutInflater();
-        View layout_update_info = inflater.inflate(R.layout.layout_update_information, null);
+        View layout_update_info = inflater.inflate(R.layout.layout_update_information , null);
         final MaterialEditText edtName = (MaterialEditText) layout_update_info.findViewById(R.id.edt_Name);
         final MaterialEditText edtPhone = (MaterialEditText) layout_update_info.findViewById(R.id.edt_Phone);
         final ImageView image_upload = (ImageView) layout_update_info.findViewById(R.id.image_upload);
@@ -640,9 +807,9 @@ public class FixerHome extends AppCompatActivity
 
                         Map<String, Object> updateinfo = new HashMap<>();
                         if (!TextUtils.isEmpty(name))
-                            updateinfo.put("strName", name);
+                            updateinfo.put("strName" , name);
                         if (!TextUtils.isEmpty(phone))
-                            updateinfo.put("strPhone", phone);
+                            updateinfo.put("strPhone" , phone);
 
                         DatabaseReference fixerInformation = FirebaseDatabase.getInstance().getReference(Common.fixer_inf_tbl);
                         fixerInformation.child(account.getId())
@@ -679,7 +846,7 @@ public class FixerHome extends AppCompatActivity
     private void Signout() {
         android.app.AlertDialog.Builder builder;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-            builder = new android.app.AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);
+            builder = new android.app.AlertDialog.Builder(this , android.R.style.Theme_Material_Dialog_Alert);
         else
             builder = new android.app.AlertDialog.Builder(this);
 
@@ -687,7 +854,7 @@ public class FixerHome extends AppCompatActivity
             @Override
             public void onClick(DialogInterface dialog , int which) {
                 AccountKit.logOut();
-                Intent intent = new Intent(FixerHome.this, MainActivity.class);
+                Intent intent = new Intent(FixerHome.this , MainActivity.class);
                 startActivity(intent);
                 finish();
             }
@@ -702,7 +869,7 @@ public class FixerHome extends AppCompatActivity
 
     @Override
     public void onClick(View view) {
-        switch (view.getId()){
+        switch (view.getId()) {
             case R.id.image_upload:
                 chooseImage();
                 break;
@@ -713,15 +880,15 @@ public class FixerHome extends AppCompatActivity
         Intent intent = new Intent();
         intent.setType("image/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(Intent.createChooser(intent, "Chọn hình đại diện..."), Common.PICK_IMAGE_REQUEST);
+        startActivityForResult(Intent.createChooser(intent , "Chọn hình đại diện...") , Common.PICK_IMAGE_REQUEST);
     }
 
     @Override
     protected void onActivityResult(int requestCode , int resultCode , Intent data) {
         super.onActivityResult(requestCode , resultCode , data);
-        if (requestCode == Common.PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null){
+        if (requestCode == Common.PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
             Uri saveuri = data.getData();
-            if (saveuri != null){
+            if (saveuri != null) {
                 final ProgressDialog mDialog = new ProgressDialog(this);
                 mDialog.setMessage("Đang tải ... ");
                 mDialog.show();
@@ -740,7 +907,7 @@ public class FixerHome extends AppCompatActivity
                                     @Override
                                     public void onSuccess(Account account) {
                                         Map<String, Object> avatarUpdate = new HashMap<>();
-                                        avatarUpdate.put("avatarUrl", uri.toString());
+                                        avatarUpdate.put("avatarUrl" , uri.toString());
                                         DatabaseReference fixerInformation = FirebaseDatabase.getInstance().getReference(Common.fixer_inf_tbl);
                                         fixerInformation.child(account.getId()).updateChildren(avatarUpdate)
                                                 .addOnCompleteListener(new OnCompleteListener<Void>() {
@@ -791,6 +958,17 @@ public class FixerHome extends AppCompatActivity
         //Update location
         buildLocationCallback();
         buildLocationRequest();
-        fusedLocationProviderClient.requestLocationUpdates(mLocationRequest, locationCallback, Looper.myLooper());
+        if (ActivityCompat.checkSelfPermission(FixerHome.this , Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(FixerHome.this , Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        fusedLocationProviderClient.requestLocationUpdates(mLocationRequest , locationCallback , Looper.myLooper());
     }
 }

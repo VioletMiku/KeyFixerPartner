@@ -2,21 +2,15 @@ package com.keyfixer.partner;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
-import android.os.Message;
 import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.RelativeLayout;
@@ -31,21 +25,17 @@ import com.facebook.accountkit.AccountKitLoginResult;
 import com.facebook.accountkit.ui.AccountKitActivity;
 import com.facebook.accountkit.ui.AccountKitConfiguration;
 import com.facebook.accountkit.ui.LoginType;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 import com.keyfixer.partner.Common.Common;
-import com.keyfixer.partner.Model.User;
+import com.keyfixer.partner.Model.Fixer;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.rengwuxian.materialedittext.MaterialEditText;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -106,7 +96,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     users.child(account.getId()).addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
-                            Common.currentUser = dataSnapshot.getValue(User.class);
+                            Common.currentFixer = dataSnapshot.getValue(Fixer.class);
                             Intent homeIntent = new Intent(MainActivity.this, FixerHome.class);
                             startActivity(homeIntent);
 
@@ -197,22 +187,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 @Override
                                 public void onDataChange(DataSnapshot dataSnapshot) {
                                     if(!dataSnapshot.child(account.getId()).exists()) {// if not exist
-                                        //create new user and login
-                                        User user = new User();
-                                        user.setStrPhone(account.getPhoneNumber().toString());
-                                        user.setStrName(account.getPhoneNumber().toString());
-                                        user.setAvatarUrl("");
-                                        user.setRates("0.0");
-
+                                        //create new fixer and login
+                                        Fixer fixer = new Fixer();
+                                        fixer.setStrPhone(account.getPhoneNumber().toString());
+                                        fixer.setStrName(account.getPhoneNumber().toString());
+                                        fixer.setAvatarUrl("");
+                                        fixer.setRates("0.0");
+                                        fixer.setServiceType("S ử a   k h ó a   n h à"); //default service :))
                                         //register to firebase
-                                        users.child(account.getId()).setValue(user).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                        users.child(account.getId()).setValue(fixer).addOnSuccessListener(new OnSuccessListener<Void>() {
                                             @Override
                                             public void onSuccess(Void aVoid) {
                                                 //login
                                                 users.child(account.getId()).addListenerForSingleValueEvent(new ValueEventListener() {
                                                     @Override
                                                     public void onDataChange(DataSnapshot dataSnapshot) {
-                                                        Common.currentUser = dataSnapshot.getValue(User.class);
+                                                        Common.currentFixer = dataSnapshot.getValue(Fixer.class);
                                                         Intent homeIntent = new Intent(MainActivity.this, FixerHome.class);
                                                         Toast.makeText(MainActivity.this , "Nhớ sửa lại tên sau khi vào trang chính" , Toast.LENGTH_SHORT).show();
                                                         startActivity(homeIntent);
@@ -240,7 +230,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                         users.child(account.getId()).addListenerForSingleValueEvent(new ValueEventListener() {
                                             @Override
                                             public void onDataChange(DataSnapshot dataSnapshot) {
-                                                Common.currentUser = dataSnapshot.getValue(User.class);
+                                                Common.currentFixer = dataSnapshot.getValue(Fixer.class);
                                                 Intent homeIntent = new Intent(MainActivity.this, FixerHome.class);
                                                 startActivity(homeIntent);
 

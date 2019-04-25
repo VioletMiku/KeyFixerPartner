@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -15,19 +15,24 @@
         android:layout_height="match_parent" />
 
     <LinearLayout
+        app:layout_constraintTop_toTopOf="parent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:weightSum="10"
+        android:layout_marginTop="70dp"
         android:orientation="horizontal"
+        android:id="@+id/old_location"
         android:padding="16dp">
 
         <TextView
+            android:visibility="invisible"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Vị trí của bạn "
             android:textStyle="bold"/>
 
         <com.github.glomadrian.materialanimatedswitch.MaterialAnimatedSwitch
+            android:visibility="invisible"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="3"
@@ -36,7 +41,43 @@
             app:base_press_color="@color/basePressColor"
             app:ball_release_color="@color/ballReleaseColor"
             app:ball_press_color="@android:color/white"/>
-
     </LinearLayout>
 
-</RelativeLayout>
+    <RelativeLayout
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="50dp"
+        android:layout_marginTop="100dp"
+        android:id="@+id/gps_field"
+        android:layout_gravity="right">
+
+        <ImageView
+            android:visibility="invisible"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:id="@+id/gps_on"
+            android:src="@drawable/ic_gps_fixed_black_24dp"/>
+
+        <ImageView
+            android:visibility="visible"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:id="@+id/gps_off"
+            android:src="@drawable/ic_gps_off_black_24dp" />
+
+    </RelativeLayout>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="130dp"
+        android:text="G P S"
+        android:textStyle="bold"
+        android:textSize="18sp"
+        android:layout_marginRight="40dp"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+</android.support.constraint.ConstraintLayout>

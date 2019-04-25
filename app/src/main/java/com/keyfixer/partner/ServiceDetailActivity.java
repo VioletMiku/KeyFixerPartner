@@ -13,6 +13,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.keyfixer.partner.Common.Common;
 import com.keyfixer.partner.Model.DetailFee;
 import com.keyfixer.partner.Model.Service;
 
@@ -22,8 +23,7 @@ import java.util.Calendar;
 public class ServiceDetailActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
-    TextView txtDate, txtTotalFee, txtDistance, txtDistanceFee, txtStartAddress, txtEndAddress, txtVATFee;
-    ListView lvServices;
+    TextView txtDate, txtTotalFee, txtDistance, txtDistanceFee, txtStartAddress, txtEndAddress, txtVATFee, txtServiceName, txtServiceFee;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +44,8 @@ public class ServiceDetailActivity extends FragmentActivity implements OnMapRead
         txtStartAddress = (TextView) findViewById(R.id.txt_startAddress);
         txtEndAddress = (TextView) findViewById(R.id.txt_endAddress);
         txtVATFee = (TextView) findViewById(R.id.txtVAT);
+        txtServiceName = (TextView) findViewById(R.id.service_name);
+        txtServiceFee = (TextView) findViewById(R.id.service_fee);
     }
 
     DetailFee getData(){
@@ -75,7 +77,16 @@ public class ServiceDetailActivity extends FragmentActivity implements OnMapRead
             txtStartAddress.setText(getData().getStartAddress());
             txtDistanceFee.setText("" + Double.parseDouble(getData().getDistance())*5);
             txtTotalFee.setText(totalfee + (totalfee*0.4) + "");
-
+            if (Common.used_service == "S ử a   k h ó a   x e   g ắ n   m á y"){
+                txtServiceName.setText("Sửa khóa xe gắn máy/2 bánh");
+                txtServiceFee.setText(Common.motorbyke_lock_service + " vnd");
+            } else if (Common.used_service == "S ử a   k h ó a   n h à"){
+                txtServiceName.setText("Sửa khóa nhà");
+                txtServiceFee.setText(Common.house_lock_service + " vnd");
+            } else if (Common.used_service == "S ử a   k h ó a   x e   h ơ i"){
+                txtServiceName.setText("Sửa khóa xe hơi");
+                txtServiceFee.setText(Common.car_lock_service + " vnd");
+            }
             String[] location_end = getIntent().getStringExtra("location_end").split(",");
             Log.e("data","" + location_end.toString());
             LatLng fixed = new LatLng(Double.parseDouble(location_end[0]), Double.parseDouble(location_end[1]));

@@ -1,16 +1,27 @@
 package com.keyfixer.partner.Model;
 
-public class User {
-    private String strEmail, strPassword, strPhone, strName, avatarUrl, rates;
+public class Fixer {
+    private String strEmail, strPassword, strPhone, strName, avatarUrl, rates, serviceType;
 
-    public User() {
+    public Fixer() {
     }
 
-    public User(String strEmail, String strPassword, String strPhone, String strName) {
+    public Fixer(String strEmail , String strPassword , String strPhone , String strName , String avatarUrl , String rates , String serviceType) {
         this.strEmail = strEmail;
         this.strPassword = strPassword;
         this.strPhone = strPhone;
         this.strName = strName;
+        this.avatarUrl = avatarUrl;
+        this.rates = rates;
+        this.serviceType = serviceType;
+    }
+
+    public String getServiceType() {
+        return serviceType;
+    }
+
+    public void setServiceType(String serviceType) {
+        this.serviceType = serviceType;
     }
 
     public String getRates() {

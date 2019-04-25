@@ -75,10 +75,10 @@ public class FixerTracking extends FragmentActivity implements OnMapReadyCallbac
     GeoFire geofire;
     String customerid;
     Button btnstartfixing;
-    double[] services_fee = {30000, 25000};
     List<Service> services;
 
     String customerlat, customerlng;
+    double fee;
     //play services
     private static final int PLAY_SERVICE_RES_REQUEST = 7001;
 
@@ -123,7 +123,7 @@ public class FixerTracking extends FragmentActivity implements OnMapReadyCallbac
         mMap = googleMap;
         customerMarker = mMap.addCircle(new CircleOptions().center(new LatLng(Double.parseDouble(customerlat), Double.parseDouble(customerlng)))
                 .radius(50).strokeColor(Color.BLUE).fillColor(0x220000FF).strokeWidth(5.0f));
-        geofire = new GeoFire(FirebaseDatabase.getInstance().getReference(Common.fixer_tbl));
+        geofire = new GeoFire(FirebaseDatabase.getInstance().getReference(Common.fixer_tbl).child(Common.currentFixer.getServiceType()));
         GeoQuery geoQuery = geofire.queryAtLocation(new GeoLocation(Double.parseDouble(customerlat), Double.parseDouble(customerlng)), 0.05f);
         geoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
             @Override
@@ -358,13 +358,21 @@ public class FixerTracking extends FragmentActivity implements OnMapReadyCallbac
                         String distance_text = distance.getString("text");
                         double distance_value = Double.parseDouble(distance_text.replaceAll("[^0-9\\\\.]+",""));
 
+                        if (Common.used_service == "S ử a   k h ó a   x e   g ắ n   m á y"){
+                            fee = Common.motorbyke_lock_service;
+                        } else if (Common.used_service == "S ử a   k h ó a   n h à"){
+                            fee = Common.house_lock_service;
+                        } else if (Common.used_service == "S ử a   k h ó a   x e   h ơ i"){
+                            fee = Common.car_lock_service;
+                        }
+
                         sendFixCompleteNotification(customerid);
 
                         Intent intent = new Intent(FixerTracking.this, ServiceDetailActivity.class);
                         intent.putExtra("start_address", legsObject.getString("start_address"));
                         intent.putExtra("end_address", legsObject.getString("end_address"));
                         intent.putExtra("distance", String.valueOf(distance_value));
-                        intent.putExtra("total", Common.formulaPrice(distance_value, services_fee ));
+                        intent.putExtra("total", Common.formulaPrice(distance_value, fee ));
                         intent.putExtra("location_start",String.format("%f, %f", fixLocation.getLatitude(), fixLocation.getLongitude()));
                         intent.putExtra("location_end",String.format("%f, %f", Common.mLastLocation.getLatitude(), Common.mLastLocation.getLongitude()));
                         intent.putExtra("services", (Serializable) services);
