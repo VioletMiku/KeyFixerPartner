@@ -34,6 +34,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RadioButton;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -141,6 +142,7 @@ public class FixerHome extends AppCompatActivity
     private Polyline blackPolyline, grayPolyline;
     private Button btnGo;
     private EditText editText;
+    RelativeLayout slider;
 
     //presense system
     DatabaseReference onlineref, currentUserref;
@@ -208,7 +210,8 @@ public class FixerHome extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_fixer_home);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        slider = (RelativeLayout) findViewById(R.id.slider);
+        final Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         firebaseStorage = FirebaseStorage.getInstance();
@@ -216,12 +219,19 @@ public class FixerHome extends AppCompatActivity
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+        final DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        final ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this , drawer , toolbar , R.string.navigation_drawer_open , R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
+        slider.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                drawer.addDrawerListener(toggle);
+                toggle.syncState();
+            }
+        });
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
@@ -687,7 +697,7 @@ public class FixerHome extends AppCompatActivity
                 carservice.setValue(null);
                 motorservice.setValue(null);
             }catch (Exception ex){
-                Log.e("Exception when remove id from house", "" + ex.getMessage() + " \n-- caused by: " + ex.getCause());
+                Log.e("Exception house", "" + ex.getMessage() + " \n-- caused by: " + ex.getCause());
             }
         } else if (Common.currentFixer.getServiceType().equals("S ử a   k h ó a   x e   h ơ i")) {
             rdCar.setChecked(true);
@@ -699,7 +709,7 @@ public class FixerHome extends AppCompatActivity
                 motorservice.setValue(null);
 
             }catch (Exception ex){
-                Log.e("Exception when remove id from car", "" + ex.getMessage() + " \n-- caused by: " + ex.getCause());
+                Log.e("Exception car", "" + ex.getMessage() + " \n-- caused by: " + ex.getCause());
             }
         } else if (Common.currentFixer.getServiceType().equals("S ử a   k h ó a   x e   g ắ n   m á y")) {
             rdMotorbike.setChecked(true);
@@ -711,7 +721,7 @@ public class FixerHome extends AppCompatActivity
                 carservice.setValue(null);
 
             }catch (Exception ex){
-                Log.e("Exception when remove id from motorbike", "" + ex.getMessage() + " \n-- caused by: " + ex.getCause());
+                Log.e("Exception motorbike", "" + ex.getMessage() + " \n-- caused by: " + ex.getCause());
             }
         }
 

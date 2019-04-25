@@ -358,11 +358,11 @@ public class FixerTracking extends FragmentActivity implements OnMapReadyCallbac
                         String distance_text = distance.getString("text");
                         double distance_value = Double.parseDouble(distance_text.replaceAll("[^0-9\\\\.]+",""));
 
-                        if (Common.used_service == "S ử a   k h ó a   x e   g ắ n   m á y"){
+                        if (Common.currentFixer.getServiceType().equals("S ử a   k h ó a   x e   g ắ n   m á y")){
                             fee = Common.motorbyke_lock_service;
-                        } else if (Common.used_service == "S ử a   k h ó a   n h à"){
+                        } else if (Common.currentFixer.getServiceType().equals("S ử a   k h ó a   n h à")){
                             fee = Common.house_lock_service;
-                        } else if (Common.used_service == "S ử a   k h ó a   x e   h ơ i"){
+                        } else if (Common.currentFixer.getServiceType().equals("S ử a   k h ó a   x e   h ơ i")){
                             fee = Common.car_lock_service;
                         }
 
@@ -375,7 +375,7 @@ public class FixerTracking extends FragmentActivity implements OnMapReadyCallbac
                         intent.putExtra("total", Common.formulaPrice(distance_value, fee ));
                         intent.putExtra("location_start",String.format("%f, %f", fixLocation.getLatitude(), fixLocation.getLongitude()));
                         intent.putExtra("location_end",String.format("%f, %f", Common.mLastLocation.getLatitude(), Common.mLastLocation.getLongitude()));
-                        intent.putExtra("services", (Serializable) services);
+                        //intent.putExtra("services", (Serializable) services);
                         startActivity(intent);
                         finish();
                     }catch(Exception e){

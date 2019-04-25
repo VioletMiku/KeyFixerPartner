@@ -24,6 +24,7 @@ public class ServiceDetailActivity extends FragmentActivity implements OnMapRead
 
     private GoogleMap mMap;
     TextView txtDate, txtTotalFee, txtDistance, txtDistanceFee, txtStartAddress, txtEndAddress, txtVATFee, txtServiceName, txtServiceFee;
+    double serviceFee;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,7 +53,6 @@ public class ServiceDetailActivity extends FragmentActivity implements OnMapRead
         detailFee.setEndAddress(getIntent().getStringExtra("end_address"));
         detailFee.setStartAddress(getIntent().getStringExtra("start_address"));
         detailFee.setTotalFee(getIntent().getDoubleExtra("total", 30.0));
-        detailFee.setServices(getIntent().<Service>getParcelableArrayListExtra("services"));
         return detailFee;
     }
 
@@ -73,6 +73,22 @@ public class ServiceDetailActivity extends FragmentActivity implements OnMapRead
             txtEndAddress.setText(getData().getEndAddress());
             txtStartAddress.setText(getData().getStartAddress());
             txtTotalFee.setText(totalfee + (totalfee*0.4) + "");
+
+            if (Common.currentFixer.getServiceType().equals("S ử a   k h ó a   x e   g ắ n   m á y")){
+                Log.e("warning4", "" + Common.currentFixer.getServiceType());
+                txtServiceName.setText("Sửa khóa xe gắn máy");
+                serviceFee = Common.motorbyke_lock_service;
+            } else if (Common.currentFixer.getServiceType().equals("S ử a   k h ó a   n h à")){
+                Log.e("warning4", "" + Common.currentFixer.getServiceType());
+                txtServiceName.setText("Sửa khóa nhà");
+                serviceFee = Common.house_lock_service;
+            } else if (Common.currentFixer.getServiceType().equals("S ử a   k h ó a   x e   h ơ i")){
+                Log.e("warning4", "" + Common.currentFixer.getServiceType());
+                txtServiceName.setText("Sửa khóa xe hơi");
+                serviceFee = Common.car_lock_service;
+            }
+
+            txtServiceFee.setText(serviceFee + " vnd");
             String[] location_end = getIntent().getStringExtra("location_end").split(",");
             Log.e("data","" + location_end.toString());
             LatLng fixed = new LatLng(Double.parseDouble(location_end[0]), Double.parseDouble(location_end[1]));
