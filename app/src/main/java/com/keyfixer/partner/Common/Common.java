@@ -2,6 +2,7 @@ package com.keyfixer.partner.Common;
 
 import android.location.Location;
 
+import com.google.firebase.database.DatabaseReference;
 import com.keyfixer.partner.Model.Fixer;
 import com.keyfixer.partner.Remote.FCMClient;
 import com.keyfixer.partner.Remote.IFCMService;
@@ -10,6 +11,9 @@ import com.keyfixer.partner.Remote.RetrofitClient;
 
 public class Common {
 
+    public static DatabaseReference onlineref, currentUserref;
+    public static boolean isAdmin;
+    public static boolean isActivated;
     public static String used_service = "";
     public static boolean isFreeForDistanceFee = true;
     public static final String fixer_tbl = "Fixers";

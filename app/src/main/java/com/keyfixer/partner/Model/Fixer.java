@@ -2,11 +2,13 @@ package com.keyfixer.partner.Model;
 
 public class Fixer {
     private String strEmail, strPassword, strPhone, strName, avatarUrl, rates, serviceType;
+    private boolean isAdmin, isActivated;
+    private double jobFee;
 
     public Fixer() {
     }
 
-    public Fixer(String strEmail , String strPassword , String strPhone , String strName , String avatarUrl , String rates , String serviceType) {
+    public Fixer(String strEmail , String strPassword , String strPhone , String strName , String avatarUrl , String rates , String serviceType , boolean isAdmin , boolean isActivated , double jobFee) {
         this.strEmail = strEmail;
         this.strPassword = strPassword;
         this.strPhone = strPhone;
@@ -14,6 +16,33 @@ public class Fixer {
         this.avatarUrl = avatarUrl;
         this.rates = rates;
         this.serviceType = serviceType;
+        this.isAdmin = isAdmin;
+        this.isActivated = isActivated;
+        this.jobFee = jobFee;
+    }
+
+    public double getJobFee() {
+        return jobFee;
+    }
+
+    public void setJobFee(double jobFee) {
+        this.jobFee = jobFee;
+    }
+
+    public boolean isAdmin() {
+        return isAdmin;
+    }
+
+    public void setAdmin(boolean admin) {
+        isAdmin = admin;
+    }
+
+    public boolean isActivated() {
+        return isActivated;
+    }
+
+    public void setActivated(boolean activated) {
+        isActivated = activated;
     }
 
     public String getServiceType() {
@@ -70,5 +99,20 @@ public class Fixer {
 
     public void setStrName(String strName) {
         this.strName = strName;
+    }
+
+    @Override
+    public String toString() {
+        return "Fixer{" +
+                "strEmail='" + strEmail + '\'' +
+                ", strPassword='" + strPassword + '\'' +
+                ", strPhone='" + strPhone + '\'' +
+                ", strName='" + strName + '\'' +
+                ", avatarUrl='" + avatarUrl + '\'' +
+                ", rates='" + rates + '\'' +
+                ", serviceType='" + serviceType + '\'' +
+                ", isAdmin=" + isAdmin +
+                ", isActivated=" + isActivated +
+                '}';
     }
 }
