@@ -81,43 +81,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //Init view
         GetButtonControl();
 
-        //Auto login with Facebook account kit for second time
-        if (AccountKit.getCurrentAccessToken() != null){
-            //create dialog
-            final AlertDialog waitingDialog = new SpotsDialog(this);
-            waitingDialog.show();
-            waitingDialog.setMessage("Chờ trong giây lát");
-            waitingDialog.setCancelable(false);
 
-            AccountKit.getCurrentAccount(new AccountKitCallback<Account>() {
-                @Override
-                public void onSuccess(Account account) {
-
-                    users.child(account.getId()).addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-                            Common.currentFixer = dataSnapshot.getValue(Fixer.class);
-                            Intent homeIntent = new Intent(MainActivity.this, FixerHome.class);
-                            startActivity(homeIntent);
-
-                            //dismiss dialog
-                            waitingDialog.dismiss();
-                            finish();
-                        }
-
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {
-
-                        }
-                    });
-                }
-
-                @Override
-                public void onError(AccountKitError accountKitError) {
-
-                }
-            });
-        }
     }
 
     private void printkeyhash() {
@@ -193,7 +157,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                         fixer.setStrName(account.getPhoneNumber().toString());
                                         fixer.setAvatarUrl("");
                                         fixer.setRates("0.0");
-                                        fixer.setServiceType("S ử a   k h ó a   n h à"); //default service :))
+                                        fixer.setCanFixHouseKey(true);//default service :))
+                                        fixer.setCanFixCarKey(false);
+                                        fixer.setCanFixBikeKey(false);
+                                        fixer.setActivated(false);
+                                        fixer.setAdmin(false);
+                                        fixer.setJobFee(500000);
                                         //register to firebase
                                         users.child(account.getId()).setValue(fixer).addOnSuccessListener(new OnSuccessListener<Void>() {
                                             @Override
@@ -203,8 +172,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                                     @Override
                                                     public void onDataChange(DataSnapshot dataSnapshot) {
                                                         Common.currentFixer = dataSnapshot.getValue(Fixer.class);
+                                                        Common.isAdmin = dataSnapshot.getValue(Fixer.class).isAdmin();
+                                                        Common.isActivated = dataSnapshot.getValue(Fixer.class).isActivated();
                                                         Intent homeIntent = new Intent(MainActivity.this, FixerHome.class);
-                                                        Toast.makeText(MainActivity.this , "Nhớ sửa lại tên sau khi vào trang chính" , Toast.LENGTH_SHORT).show();
+                                                        Toast.makeText(MainActivity.this , "Nhớ sửa lại tên sau khi vào trang chính" , Toast.LENGTH_LONG).show();
                                                         startActivity(homeIntent);
 
                                                         //dismiss dialog
@@ -231,6 +202,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                             @Override
                                             public void onDataChange(DataSnapshot dataSnapshot) {
                                                 Common.currentFixer = dataSnapshot.getValue(Fixer.class);
+                                                Common.isAdmin = dataSnapshot.getValue(Fixer.class).isAdmin();
+                                                Common.isActivated = dataSnapshot.getValue(Fixer.class).isActivated();
                                                 Intent homeIntent = new Intent(MainActivity.this, FixerHome.class);
                                                 startActivity(homeIntent);
 

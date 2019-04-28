@@ -12,6 +12,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -123,7 +124,12 @@ public class FixerTracking extends FragmentActivity implements OnMapReadyCallbac
         mMap = googleMap;
         customerMarker = mMap.addCircle(new CircleOptions().center(new LatLng(Double.parseDouble(customerlat), Double.parseDouble(customerlng)))
                 .radius(50).strokeColor(Color.BLUE).fillColor(0x220000FF).strokeWidth(5.0f));
-        geofire = new GeoFire(FirebaseDatabase.getInstance().getReference(Common.fixer_tbl).child(Common.currentFixer.getServiceType()));
+        if (!TextUtils.isEmpty(Common.used_service))
+            geofire = new GeoFire(FirebaseDatabase.getInstance().getReference(Common.fixer_tbl).child("S ử a   k h ó a   n h à").child("activated"));
+        if (!TextUtils.isEmpty(Common.used_service1))
+            geofire = new GeoFire(FirebaseDatabase.getInstance().getReference(Common.fixer_tbl).child("S ử a   k h ó a   x e   h ơ i").child("activated"));
+        if (!TextUtils.isEmpty(Common.used_service2))
+            geofire = new GeoFire(FirebaseDatabase.getInstance().getReference(Common.fixer_tbl).child("S ử a   k h ó a   x e   g ắ n   m á y").child("activated"));
         GeoQuery geoQuery = geofire.queryAtLocation(new GeoLocation(Double.parseDouble(customerlat), Double.parseDouble(customerlng)), 0.05f);
         geoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
             @Override
@@ -358,11 +364,11 @@ public class FixerTracking extends FragmentActivity implements OnMapReadyCallbac
                         String distance_text = distance.getString("text");
                         double distance_value = Double.parseDouble(distance_text.replaceAll("[^0-9\\\\.]+",""));
 
-                        if (Common.currentFixer.getServiceType().equals("S ử a   k h ó a   x e   g ắ n   m á y")){
+                        if (Common.service_chose.equals("S ử a   k h ó a   x e   g ắ n   m á y")){
                             fee = Common.motorbyke_lock_service;
-                        } else if (Common.currentFixer.getServiceType().equals("S ử a   k h ó a   n h à")){
+                        } else if (Common.service_chose.equals("S ử a   k h ó a   n h à")){
                             fee = Common.house_lock_service;
-                        } else if (Common.currentFixer.getServiceType().equals("S ử a   k h ó a   x e   h ơ i")){
+                        } else if (Common.service_chose.equals("S ử a   k h ó a   x e   h ơ i")){
                             fee = Common.car_lock_service;
                         }
 

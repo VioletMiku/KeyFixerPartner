@@ -14,5 +14,6 @@
     <color name="baseReleaseColor">#212121</color>
     <color name="basePressColor">#FAFAFA</color>
     <color name="ballReleaseColor">#9E9E9E</color>
+    <color name="personal_page_background_header">#263CAB</color>
     <color name="green">#00FF00</color>
 </resources>

@@ -13,6 +13,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.annotation.IdRes;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
@@ -30,9 +31,13 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.animation.LinearInterpolator;
+import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -80,6 +85,7 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.keyfixer.partner.Adapter.ListViewCustomAdapter_forNonActivatedAccount;
 import com.keyfixer.partner.Common.Common;
 import com.keyfixer.partner.Model.Fixer;
 import com.keyfixer.partner.Model.Token;
@@ -90,6 +96,7 @@ import com.squareup.picasso.Picasso;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -137,7 +144,8 @@ public class FixerHome extends AppCompatActivity
     private Handler handler;
     private LatLng startPosition, endPosition, currentPosition;
     private int index, next;
-    private String destination;
+    private String destination, activated;
+    private List<Fixer> ActivatedList = null, nonActivatedList = null;
     private PolylineOptions polylineOptions, black_polylineOptions;
     private Polyline blackPolyline, grayPolyline;
     private Button btnGo;
@@ -232,8 +240,22 @@ public class FixerHome extends AppCompatActivity
                 toggle.syncState();
             }
         });
+        //menu options
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+        Common.isAdmin = Common.currentFixer.isAdmin();
+        if (Common.currentFixer.getJobFee() <= 0){
+            Common.isActivated = false;
+            Toast.makeText(this , "Tài khoản vừa hết tiền" , Toast.LENGTH_SHORT).show();
+        }
+        if (Common.isAdmin){
+            toggleVisibility(navigationView.getMenu(), R.id.nav_provide_admin_rights, true);
+            toggleVisibility(navigationView.getMenu(), R.id.nav_fixer_account_activate, true);
+        }
+        if (Common.isActivated)
+            activated = "activated";
+        else
+            activated = "not activated";
 
         View navigationHeaderView = navigationView.getHeaderView(0);
         TextView txtName = (TextView) navigationHeaderView.findViewById(R.id.txt_FixerName);
@@ -246,8 +268,6 @@ public class FixerHome extends AppCompatActivity
             Picasso.with(this).load(Common.currentFixer.getAvatarUrl()).into(imageAvatar);
         }
 
-        //set service type for cal the fee
-        Common.used_service = Common.currentFixer.getServiceType();
         //mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -258,9 +278,25 @@ public class FixerHome extends AppCompatActivity
             @Override
             public void onSuccess(Account account) {
                 onlineref = FirebaseDatabase.getInstance().getReference().child("info/connected");
-                currentUserref = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl)
-                        .child(Common.currentFixer.getServiceType())
-                        .child(account.getId());
+                if (Common.currentFixer.isCanFixHouseKey()){
+                    currentUserref = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl)
+                            .child("S ử a   k h ó a   n h à")
+                            .child(activated)
+                            .child(account.getId());
+                }
+                if (Common.currentFixer.isCanFixCarKey()){
+                    currentUserref = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl)
+                            .child("S ử a   k h ó a   x e   h ơ i")
+                            .child(activated)
+                            .child(account.getId());
+                }
+                if (Common.currentFixer.isCanFixBikeKey()){
+                    currentUserref = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl)
+                            .child("S ử a   k h ó a   x e   g ắ n   m á y")
+                            .child(activated)
+                            .child(account.getId());
+                }
+                Common.currentUserref = currentUserref;
                 Common.FixerID = account.getId();
                 onlineref.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
@@ -307,8 +343,18 @@ public class FixerHome extends AppCompatActivity
                 fusedLocationProviderClient.requestLocationUpdates(mLocationRequest , locationCallback , Looper.myLooper());
 
                 //geo fire
-                fixers = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl).child(Common.currentFixer.getServiceType());
-                geoFire = new GeoFire(fixers);
+                if (Common.currentFixer.isCanFixHouseKey()){
+                    fixers = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl).child("S ử a   k h ó a   n h à").child(activated);
+                    geoFire = new GeoFire(fixers);
+                }
+                if (Common.currentFixer.isCanFixCarKey()){
+                    fixers = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl).child("S ử a   k h ó a   x e   h ơ i").child(activated);
+                    geoFire = new GeoFire(fixers);
+                }
+                if (Common.currentFixer.isCanFixCarKey()){
+                    fixers = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl).child("S ử a   k h ó a   x e   g ắ n   m á y").child(activated);
+                    geoFire = new GeoFire(fixers);
+                }
 
                 displayLocation();
                 Snackbar.make(mapFragment.getView() , "Bạn đang online" , Snackbar.LENGTH_SHORT).show();
@@ -528,6 +574,10 @@ public class FixerHome extends AppCompatActivity
         return poly;
     }
 
+    private void toggleVisibility(Menu menu, @IdRes int id, boolean visible){
+        menu.findItem(id).setVisible(visible);
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode , @NonNull String[] permissions , @NonNull int[] grantResults) {
         switch (requestCode) {
@@ -556,8 +606,18 @@ public class FixerHome extends AppCompatActivity
             buildLocationRequest();
             if (gpson.getVisibility() == View.VISIBLE) {
                 //geo fire
-                fixers = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl).child(Common.currentFixer.getServiceType());
-                geoFire = new GeoFire(fixers);
+                if (Common.currentFixer.isCanFixHouseKey()){
+                    fixers = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl).child("S ử a   k h ó a   n h à").child(activated);
+                    geoFire = new GeoFire(fixers);
+                }
+                if (Common.currentFixer.isCanFixCarKey()){
+                    fixers = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl).child("S ử a   k h ó a   x e   h ơ i").child(activated);
+                    geoFire = new GeoFire(fixers);
+                }
+                if (Common.currentFixer.isCanFixBikeKey()) {
+                    fixers = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl).child("S ử a   k h ó a   x e   g ắ n   m á y").child(activated);
+                    geoFire = new GeoFire(fixers);
+                }
 
                 displayLocation();
             }
@@ -670,6 +730,10 @@ public class FixerHome extends AppCompatActivity
             Signout();
         } else if (id == R.id.nav_update_information) {
             ShowDialogUpdateInfo();
+        } else if (id == R.id.nav_fixer_account_activate) {
+            ShowNotActivatedListDialog();
+        } else if (id == R.id.nav_provide_admin_rights) {
+            ShowActivatedListDialog();
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -677,51 +741,306 @@ public class FixerHome extends AppCompatActivity
         return true;
     }
 
+    private void ShowNotActivatedListDialog() {
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(FixerHome.this);
+        LayoutInflater inflater = this.getLayoutInflater();
+        View nonactivated_account = inflater.inflate(R.layout.layout_fixerlist_waiting_for_check , null);
+
+        final CircleImageView avatar = (CircleImageView) nonactivated_account.findViewById(R.id.personal_avatar);
+        final TextView personal_name = (TextView) nonactivated_account.findViewById(R.id.personal_name);
+        final TextView personal_email = (TextView) nonactivated_account.findViewById(R.id.personal_email);
+        final ProgressBar progressBar = (ProgressBar) nonactivated_account.findViewById(R.id.progressBar);
+        final ListView listView_nonActivatedAccount = (ListView) nonactivated_account.findViewById(R.id.non_activated_account_list);
+        final ListViewCustomAdapter_forNonActivatedAccount adapter;
+
+        if (Common.currentFixer != null){
+            if (Common.currentFixer.getAvatarUrl() != null && !TextUtils.isEmpty(Common.currentFixer.getAvatarUrl())){
+                Picasso.with(this).load(Common.currentFixer.getAvatarUrl()).into(avatar);
+            }
+            personal_name.setText(Common.currentFixer.getStrName());
+            personal_email.setText(Common.currentFixer.getStrEmail());
+        }
+
+        if (getNonActivatedList() != null){
+            adapter = new ListViewCustomAdapter_forNonActivatedAccount(this, R.layout.layout_custom_listview_nonactivated_account, getNonActivatedList());
+            listView_nonActivatedAccount.setAdapter(adapter);
+            listView_nonActivatedAccount.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent , View view , int position , long id) {
+                    Fixer fixer = getNonActivatedList().get(position);
+                    ActiveAccount(fixer);
+                }
+            });
+            progressBar.setVisibility(View.INVISIBLE);
+        }
+
+        alertDialog.setView(nonactivated_account);
+
+        alertDialog.setPositiveButton("Hoàn tất" , new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface , int i) {
+                dialogInterface.dismiss();
+            }
+        });
+        alertDialog.show();
+    }
+
+    private void ShowActivatedListDialog() {
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(FixerHome.this);
+        LayoutInflater inflater = this.getLayoutInflater();
+        View nonactivated_account = inflater.inflate(R.layout.layout_fixerlist_waiting_for_check , null);
+
+        final CircleImageView avatar = (CircleImageView) nonactivated_account.findViewById(R.id.personal_avatar_);
+        final TextView personal_name = (TextView) nonactivated_account.findViewById(R.id.personal_name_);
+        final TextView personal_email = (TextView) nonactivated_account.findViewById(R.id.personal_email_);
+        final ProgressBar progressBar = (ProgressBar) nonactivated_account.findViewById(R.id.progressBar_);
+        final ListView listView_nonActivatedAccount = (ListView) nonactivated_account.findViewById(R.id.activated_account_list);
+        final ListViewCustomAdapter_forNonActivatedAccount adapter;
+
+        if (Common.currentFixer != null){
+            if (Common.currentFixer.getAvatarUrl() != null && !TextUtils.isEmpty(Common.currentFixer.getAvatarUrl())){
+                Picasso.with(this).load(Common.currentFixer.getAvatarUrl()).into(avatar);
+            }
+            personal_name.setText(Common.currentFixer.getStrName());
+            personal_email.setText(Common.currentFixer.getStrEmail());
+        }
+
+        if (getNonActivatedList() != null){
+            adapter = new ListViewCustomAdapter_forNonActivatedAccount(this, R.layout.layout_custom_listview_nonactivated_account, getActivatedList());
+            listView_nonActivatedAccount.setAdapter(adapter);
+            listView_nonActivatedAccount.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent , View view , int position , long id) {
+                    Fixer fixer = getNonActivatedList().get(position);
+                    AddAdminRuleAccount(fixer);
+                }
+            });
+            progressBar.setVisibility(View.INVISIBLE);
+        }
+
+        alertDialog.setView(nonactivated_account);
+
+        alertDialog.setPositiveButton("Hoàn tất" , new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface , int i) {
+                dialogInterface.dismiss();
+            }
+        });
+        alertDialog.show();
+    }
+
+    ////////////////////////      Cần hoàn tất hàm này      ////////////////////////////////////////
+    private List<Fixer> getActivatedList() {
+        ActivatedList = new ArrayList<>();
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference(Common.fixer_inf_tbl);
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                try{
+                    for (DataSnapshot snapshot:dataSnapshot.getChildren()){
+                        Fixer fixer = snapshot.getValue(Fixer.class);
+                        if (fixer.isActivated())
+                            ActivatedList.add(fixer);
+                    }
+                }catch (Exception ex){
+                    ex.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.e("Exception", "Error: ", databaseError.toException());
+            }
+        });
+        return ActivatedList;
+    }
+
+    ////////////////////////      Cần hoàn tất hàm này      ////////////////////////////////////////
+    private List<Fixer> getNonActivatedList(){
+        nonActivatedList = new ArrayList<>();
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference(Common.fixer_inf_tbl);
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                try{
+                    for (DataSnapshot snapshot:dataSnapshot.getChildren()){
+                        Fixer fixer = snapshot.getValue(Fixer.class);
+                        if (!fixer.isActivated())
+                            nonActivatedList.add(fixer);
+                    }
+                }catch (Exception ex){
+                    ex.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.e("Exception", "Error: ", databaseError.toException());
+            }
+        });
+        return nonActivatedList;
+    }
+
+    private void ActiveAccount(final Fixer item){
+        android.app.AlertDialog.Builder builder;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+            builder = new android.app.AlertDialog.Builder(this , android.R.style.Theme_Material_Dialog_Alert);
+        else
+            builder = new android.app.AlertDialog.Builder(this);
+
+        builder.setMessage("Kích hoạt tài khoản cho thợ " + item.getStrName()).setPositiveButton("Kích hoạt" , new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog , int which) {
+                dialog.dismiss();
+                final android.app.AlertDialog waitingDialog = new SpotsDialog(FixerHome.this);
+                waitingDialog.show();
+
+                AccountKit.getCurrentAccount(new AccountKitCallback<Account>() {
+                    @Override
+                    public void onSuccess(Account account) {
+                        boolean isActive = true;
+
+                        Map<String, Object> updateinfo = new HashMap<>();
+                        updateinfo.put("activated" , isActive);
+
+                        DatabaseReference fixerInformation = FirebaseDatabase.getInstance().getReference(Common.fixer_inf_tbl);
+                        fixerInformation.child(account.getId())
+                                .updateChildren(updateinfo)
+                                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task) {
+                                        if (task.isSuccessful())
+                                            Toast.makeText(FixerHome.this , "Thông tin cập nhật hoàn tất" , Toast.LENGTH_SHORT).show();
+                                        else
+                                            Toast.makeText(FixerHome.this , "Cập nhật thông tin thất bại!" , Toast.LENGTH_SHORT).show();
+
+                                        waitingDialog.dismiss();
+                                    }
+                                });
+                    }
+
+                    @Override
+                    public void onError(AccountKitError accountKitError) {
+
+                    }
+                });
+                finish();
+            }
+        }).setNegativeButton("Hủy" , new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog , int which) {
+                dialog.dismiss();
+            }
+        });
+        builder.show();
+    }
+
+    private void AddAdminRuleAccount(final Fixer item) {
+        android.app.AlertDialog.Builder builder;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+            builder = new android.app.AlertDialog.Builder(this , android.R.style.Theme_Material_Dialog_Alert);
+        else
+            builder = new android.app.AlertDialog.Builder(this);
+
+        builder.setMessage("Thêm quyền admin tài khoản  " + item.getStrName()).setPositiveButton("Thêm" , new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog , int which) {
+                dialog.dismiss();
+                final android.app.AlertDialog waitingDialog = new SpotsDialog(FixerHome.this);
+                waitingDialog.show();
+
+                AccountKit.getCurrentAccount(new AccountKitCallback<Account>() {
+                    @Override
+                    public void onSuccess(Account account) {
+
+                        Map<String, Object> updateinfo = new HashMap<>();
+                        updateinfo.put("admin" , true);
+
+                        DatabaseReference fixerInformation = FirebaseDatabase.getInstance().getReference(Common.fixer_inf_tbl);
+                        fixerInformation.child(account.getId())
+                                .updateChildren(updateinfo)
+                                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task) {
+                                        if (task.isSuccessful())
+                                            Toast.makeText(FixerHome.this , "Thông tin cập nhật hoàn tất" , Toast.LENGTH_SHORT).show();
+                                        else
+                                            Toast.makeText(FixerHome.this , "Cập nhật thông tin thất bại!" , Toast.LENGTH_SHORT).show();
+
+                                        waitingDialog.dismiss();
+                                    }
+                                });
+                    }
+
+                    @Override
+                    public void onError(AccountKitError accountKitError) {
+
+                    }
+                });
+                finish();
+            }
+        }).setNegativeButton("Hủy" , new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog , int which) {
+                dialog.dismiss();
+            }
+        });
+        builder.show();
+    }
+
     private void ShowDialogupdateServiceType() {
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(FixerHome.this);
-        alertDialog.setTitle("Loại dịch vụ");
-        alertDialog.setMessage("Vui lòng chọn dịch vụ hôm nay bạn muốn sửa");
+        alertDialog.setTitle("Cập nhật loại dịch vụ");
+        alertDialog.setMessage("Chọn loại dịch vụ bạn có thể sửa");
         LayoutInflater inflater = this.getLayoutInflater();
         View service_type = inflater.inflate(R.layout.layout_update_service_type , null);
 
-        final RadioButton rdHome = (RadioButton) service_type.findViewById(R.id.rd_home);
-        final RadioButton rdCar = (RadioButton) service_type.findViewById(R.id.rd_car);
-        final RadioButton rdMotorbike = (RadioButton) service_type.findViewById(R.id.rd_motorbike);
+        final CheckBox checkboxHome = (CheckBox) service_type.findViewById(R.id.checkbox_house);
+        final CheckBox checkboxCar = (CheckBox) service_type.findViewById(R.id.checkbox_car);
+        final CheckBox checkboxMotorbike = (CheckBox) service_type.findViewById(R.id.checkbox_motorbike);
 
-        if (Common.currentFixer.getServiceType().equals("S ử a   k h ó a   n h à")) {
-            rdHome.setChecked(true);
+        if (Common.currentFixer.isCanFixHouseKey()) {
+            checkboxHome.setChecked(true);
             Common.used_service = "S ử a   k h ó a   n h à";
+        } else if (Common.currentFixer.isCanFixCarKey()) {
+            checkboxCar.setChecked(true);
+            Common.used_service1 = "S ử a   k h ó a   x e   h ơ i";
+        } else if (Common.currentFixer.isCanFixBikeKey()) {
+            checkboxMotorbike.setChecked(true);
+            Common.used_service2 = "S ử a   k h ó a   x e   g ắ n   m á y";
+        }
+
+        if(!Common.currentFixer.isCanFixHouseKey()){
+            checkboxHome.setChecked(false);
+            Common.used_service = "";
+
             try{
-                DatabaseReference carservice = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl).getRoot().child("S ử a   k h ó a   x e   h ơ i").child(Common.FixerID);
-                DatabaseReference motorservice = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl).getRoot().child("S ử a   k h ó a   x e   g ắ n   m á y").child(Common.FixerID);
-                carservice.setValue(null);
-                motorservice.setValue(null);
+                DatabaseReference homeservice = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl).getRoot().child("S ử a   k h ó a   nhà").child(Common.FixerID);
+                homeservice.setValue(null);
             }catch (Exception ex){
                 Log.e("Exception house", "" + ex.getMessage() + " \n-- caused by: " + ex.getCause());
             }
-        } else if (Common.currentFixer.getServiceType().equals("S ử a   k h ó a   x e   h ơ i")) {
-            rdCar.setChecked(true);
-            Common.used_service = "S ử a   k h ó a   x e   h ơ i";
-            try{
-                DatabaseReference houseservice = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl).getRoot().child("S ử a   k h ó a   n h à").child(Common.FixerID);
-                DatabaseReference motorservice = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl).getRoot().child("S ử a   k h ó a   x e   g ắ n   m á y").child(Common.FixerID);
-                houseservice.setValue(null);
-                motorservice.setValue(null);
+        }
+        if(!Common.currentFixer.isCanFixCarKey()){
+            checkboxCar.setChecked(false);
+            Common.used_service1 = "";
 
-            }catch (Exception ex){
-                Log.e("Exception car", "" + ex.getMessage() + " \n-- caused by: " + ex.getCause());
-            }
-        } else if (Common.currentFixer.getServiceType().equals("S ử a   k h ó a   x e   g ắ n   m á y")) {
-            rdMotorbike.setChecked(true);
-            Common.used_service = "S ử a   k h ó a   x e   g ắ n   m á y";
             try{
-                DatabaseReference houseservice = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl).getRoot().child("S ử a   k h ó a   n h à").child(Common.FixerID);
                 DatabaseReference carservice = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl).getRoot().child("S ử a   k h ó a   x e   h ơ i").child(Common.FixerID);
-                houseservice.setValue(null);
                 carservice.setValue(null);
-
             }catch (Exception ex){
-                Log.e("Exception motorbike", "" + ex.getMessage() + " \n-- caused by: " + ex.getCause());
+                Log.e("Exception house", "" + ex.getMessage() + " \n-- caused by: " + ex.getCause());
+            }
+        }
+        if(!Common.currentFixer.isCanFixBikeKey()){
+            checkboxMotorbike.setChecked(false);
+            Common.used_service2 = "";
+
+            try{
+                DatabaseReference bikeservice = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl).getRoot().child("S ử a   k h ó a   x e   g ắ n   m á y").child(Common.FixerID);
+                bikeservice.setValue(null);
+            }catch (Exception ex){
+                Log.e("Exception house", "" + ex.getMessage() + " \n-- caused by: " + ex.getCause());
             }
         }
 
@@ -739,12 +1058,12 @@ public class FixerHome extends AppCompatActivity
                     public void onSuccess(final Account account) {
 
                         Map<String, Object> updateinfo = new HashMap<>();
-                        if (rdHome.isChecked())
-                            updateinfo.put("serviceType", "" + rdHome.getText().toString());
-                        else if (rdCar.isChecked())
-                            updateinfo.put("serviceType", "" + rdCar.getText().toString());
-                        else if (rdMotorbike.isChecked())
-                            updateinfo.put("serviceType", "" + rdMotorbike.getText().toString());
+                        if (checkboxHome.isChecked())
+                            updateinfo.put("canFixHouseKey", true);
+                        if (checkboxCar.isChecked())
+                            updateinfo.put("canFixCarKey", true);
+                        if (checkboxMotorbike.isChecked())
+                            updateinfo.put("canFixBikeKey", true);
 
                         DatabaseReference fixerInformation = FirebaseDatabase.getInstance().getReference(Common.fixer_inf_tbl);
                         fixerInformation.child(account.getId())
@@ -753,9 +1072,24 @@ public class FixerHome extends AppCompatActivity
                                     @Override
                                     public void onComplete(@NonNull Task<Void> task) {
                                         if (task.isSuccessful()) {
-                                            currentUserref = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl)
-                                                    .child(Common.currentFixer.getServiceType())
-                                                    .child(account.getId());
+                                            if (Common.currentFixer.isCanFixHouseKey()){
+                                                currentUserref = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl)
+                                                        .child("S ử a   k h ó a   n h à")
+                                                        .child(activated)
+                                                        .child(account.getId());
+                                            }
+                                            if (Common.currentFixer.isCanFixCarKey()){
+                                                currentUserref = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl)
+                                                        .child("S ử a   k h ó a   x e   h ơ i")
+                                                        .child(activated)
+                                                        .child(account.getId());
+                                            }
+                                            if (Common.currentFixer.isCanFixBikeKey()){
+                                                currentUserref = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl)
+                                                        .child("S ử a   k h ó a   x e   g ắ n   m á y")
+                                                        .child(activated)
+                                                        .child(account.getId());
+                                            }
                                             //Toast.makeText(FixerHome.this , "Thông tin cập nhật hoàn tất" , Toast.LENGTH_SHORT).show();
                                             Log.e("Choose servie alert" , "Choose successful");
                                         }
@@ -804,6 +1138,7 @@ public class FixerHome extends AppCompatActivity
         View layout_update_info = inflater.inflate(R.layout.layout_update_information , null);
         final MaterialEditText edtName = (MaterialEditText) layout_update_info.findViewById(R.id.edt_Name);
         final MaterialEditText edtPhone = (MaterialEditText) layout_update_info.findViewById(R.id.edt_Phone);
+        final MaterialEditText edtemail = (MaterialEditText) layout_update_info.findViewById(R.id.edt_email);
         final ImageView image_upload = (ImageView) layout_update_info.findViewById(R.id.image_upload);
         image_upload.setOnClickListener(this);
         alertDialog.setView(layout_update_info);
@@ -820,12 +1155,15 @@ public class FixerHome extends AppCompatActivity
                     public void onSuccess(Account account) {
                         String name = edtName.getText().toString();
                         String phone = edtPhone.getText().toString();
+                        String email = edtemail.getText().toString();
 
                         Map<String, Object> updateinfo = new HashMap<>();
                         if (!TextUtils.isEmpty(name))
                             updateinfo.put("strName" , name);
                         if (!TextUtils.isEmpty(phone))
                             updateinfo.put("strPhone" , phone);
+                        if (!TextUtils.isEmpty(email))
+                            updateinfo.put("strEmail" , email);
 
                         DatabaseReference fixerInformation = FirebaseDatabase.getInstance().getReference(Common.fixer_inf_tbl);
                         fixerInformation.child(account.getId())

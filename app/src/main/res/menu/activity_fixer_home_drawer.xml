@@ -17,6 +17,16 @@
             android:icon="@drawable/ic_information_update"
             android:title="Cập nhật thông tin" />
         <item
+            android:id="@+id/nav_fixer_account_activate"
+            android:visible="false"
+            android:icon="@drawable/icons8_contract_24"
+            android:title="Kích hoạt tài khoản đăng ký" />
+        <item
+            android:id="@+id/nav_provide_admin_rights"
+            android:visible="false"
+            android:icon="@drawable/icons8_double_up_24"
+            android:title="Phân quyền admin" />
+        <item
             android:id="@+id/nav_signout"
             android:icon="@drawable/signout"
             android:title="Đăng xuất" />

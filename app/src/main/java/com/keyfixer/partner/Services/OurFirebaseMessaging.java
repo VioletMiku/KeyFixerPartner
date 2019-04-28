@@ -6,6 +6,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import com.google.gson.Gson;
+import com.keyfixer.partner.Common.Common;
 import com.keyfixer.partner.CustomerCallActivity;
 
 import java.util.HashMap;
@@ -21,6 +22,7 @@ public class OurFirebaseMessaging extends FirebaseMessagingService {
             String customer = data.get("customer");
             String lat = data.get("lat");
             String lng = data.get("lng");
+            Common.service_chose = data.get("service");
 
             Intent intent = new Intent(getBaseContext() , CustomerCallActivity.class);
             intent.putExtra("lat" , lat);

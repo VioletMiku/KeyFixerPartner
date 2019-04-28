@@ -1,11 +1,17 @@
 package com.keyfixer.partner;
 
+import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.facebook.accountkit.Account;
+import com.facebook.accountkit.AccountKit;
+import com.facebook.accountkit.AccountKitCallback;
+import com.facebook.accountkit.AccountKitError;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -13,11 +19,21 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.keyfixer.partner.Common.Common;
 import com.keyfixer.partner.Model.DetailFee;
+import com.keyfixer.partner.Model.Fixer;
 import com.keyfixer.partner.Model.Service;
 
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class ServiceDetailActivity extends FragmentActivity implements OnMapReadyCallback {
@@ -117,5 +133,47 @@ public class ServiceDetailActivity extends FragmentActivity implements OnMapRead
                 default:
                     return "Cyka blyat! That's a doom day, sucker capitalism western! ";
         }
+    }
+
+    private void SubtractAccountFee(){
+        final double[] fee = new double[1];
+        AccountKit.getCurrentAccount(new AccountKitCallback<Account>() {
+            @Override
+            public void onSuccess(Account account) {
+
+                DatabaseReference fixerInformation = FirebaseDatabase.getInstance().getReference(Common.fixer_inf_tbl).child(Common.FixerID);
+                fixerInformation.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        Fixer fixer = dataSnapshot.getValue(Fixer.class);
+                        fee[0] = fixer.getJobFee() - 10000;
+                        Log.e("Subtract information", "This account has been subtracted by 10000 vnd");
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+                Map<String, Object> updateinfo = new HashMap<>();
+                updateinfo.put("jobFee" , fee[0]);
+                fixerInformation.child(account.getId())
+                        .updateChildren(updateinfo)
+                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                if (task.isSuccessful())
+                                    Log.e("Subtract successful", "This account has been subtracted by 10000 vnd");
+                                else
+                                    Log.e("Subtract failed", "This account can't be subtracted by 10000 vnd");
+                            }
+                        });
+            }
+
+            @Override
+            public void onError(AccountKitError accountKitError) {
+
+            }
+        });
     }
 }

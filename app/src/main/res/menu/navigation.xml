@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/active_account"
+        android:contentDescription="Kích hoạt tài khoản"
+        android:icon="@drawable/icons8_contract_24"
+        android:title="Kích hoạt tài khoản"/>
+    <item
+        android:id="@+id/set_admin"
+        android:contentDescription="Phân quyền làm admin"
+        android:icon="@drawable/icons8_double_up_24"
+        android:title="Thêm quyền admin"/>
+</menu>

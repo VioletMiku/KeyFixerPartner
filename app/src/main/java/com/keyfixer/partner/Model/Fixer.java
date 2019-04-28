@@ -1,27 +1,74 @@
 package com.keyfixer.partner.Model;
 
 public class Fixer {
-    private String strEmail, strPassword, strPhone, strName, avatarUrl, rates, serviceType;
+    private String strEmail, strPassword, strPhone, strName, avatarUrl, rates;
+    private boolean isAdmin, isActivated, canFixHouseKey, canFixCarKey, canFixBikeKey;
+    private double jobFee;
 
     public Fixer() {
     }
 
-    public Fixer(String strEmail , String strPassword , String strPhone , String strName , String avatarUrl , String rates , String serviceType) {
+    public Fixer(String strEmail , String strPassword , String strPhone , String strName , String avatarUrl , String rates , boolean isAdmin , boolean isActivated , boolean canFixHouseKey , boolean canFixCarKey , boolean canFixBikeKey , double jobFee) {
         this.strEmail = strEmail;
         this.strPassword = strPassword;
         this.strPhone = strPhone;
         this.strName = strName;
         this.avatarUrl = avatarUrl;
         this.rates = rates;
-        this.serviceType = serviceType;
+        this.isAdmin = isAdmin;
+        this.isActivated = isActivated;
+        this.canFixHouseKey = canFixHouseKey;
+        this.canFixCarKey = canFixCarKey;
+        this.canFixBikeKey = canFixBikeKey;
+        this.jobFee = jobFee;
     }
 
-    public String getServiceType() {
-        return serviceType;
+    public double getJobFee() {
+        return jobFee;
     }
 
-    public void setServiceType(String serviceType) {
-        this.serviceType = serviceType;
+    public void setJobFee(double jobFee) {
+        this.jobFee = jobFee;
+    }
+
+    public boolean isAdmin() {
+        return isAdmin;
+    }
+
+    public void setAdmin(boolean admin) {
+        isAdmin = admin;
+    }
+
+    public boolean isActivated() {
+        return isActivated;
+    }
+
+    public void setActivated(boolean activated) {
+        isActivated = activated;
+    }
+
+    public boolean isCanFixHouseKey() {
+        return canFixHouseKey;
+    }
+
+    public void setCanFixHouseKey(boolean canFixHouseKey) {
+        this.canFixHouseKey = canFixHouseKey;
+    }
+
+    public boolean isCanFixCarKey() {
+        return canFixCarKey;
+    }
+
+    public void setCanFixCarKey(boolean canFixCarKey) {
+        this.canFixCarKey = canFixCarKey;
+    }
+
+    public boolean isCanFixBikeKey() {
+        return canFixBikeKey;
+    }
+
+    public void setCanFixBikeKey(boolean canFixBikeKey) {
+        this.canFixBikeKey = canFixBikeKey;
     }
 
     public String getRates() {
@@ -70,5 +117,23 @@ public class Fixer {
 
     public void setStrName(String strName) {
         this.strName = strName;
+    }
+
+    @Override
+    public String toString() {
+        return "Fixer{" +
+                "strEmail='" + strEmail + '\'' +
+                ", strPassword='" + strPassword + '\'' +
+                ", strPhone='" + strPhone + '\'' +
+                ", strName='" + strName + '\'' +
+                ", avatarUrl='" + avatarUrl + '\'' +
+                ", rates='" + rates + '\'' +
+                ", isAdmin=" + isAdmin +
+                ", isActivated=" + isActivated +
+                ", canFixHouseKey=" + canFixHouseKey +
+                ", canFixCarKey=" + canFixCarKey +
+                ", canFixBikeKey=" + canFixBikeKey +
+                ", jobFee=" + jobFee +
+                '}';
     }
 }

@@ -8,38 +8,42 @@
 
     <RelativeLayout
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@color/black">
+        android:layout_height="wrap_content">
 
-        <RadioGroup
+        <CheckBox
+            android:id="@+id/checkbox_house"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/corner"
-            android:padding="15dp"
-            android:layout_margin="5dp">
+            android:text="S ử a   k h ó a   n h à"
+            android:textStyle="bold"
+            android:textSize="20sp"
+            android:layout_marginRight="20dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="10dp"/>
 
-            <RadioButton
-                android:id="@+id/rd_home"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="S ử a   k h ó a   n h à"
-                android:textStyle="bold"
-                android:textSize="20sp"/>
-            <RadioButton
-                android:id="@+id/rd_car"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="S ử a   k h ó a   x e   h ơ i"
-                android:textStyle="bold"
-                android:textSize="20sp"/>
-            <RadioButton
-                android:id="@+id/rd_motorbike"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="S ử a   k h ó a   x e   g ắ n   m á y"
-                android:textStyle="bold"
-                android:textSize="20sp"/>
-        </RadioGroup>
+        <CheckBox
+            android:id="@+id/checkbox_car"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="S ử a   k h ó a   x e   h ơ i"
+            android:textStyle="bold"
+            android:textSize="20sp"
+            android:layout_marginRight="20dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="10dp"
+            android:layout_below="@id/checkbox_house"/>
+
+        <CheckBox
+            android:id="@+id/checkbox_motorbike"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="S ử a   k h ó a   x e   g ắ n   m á y"
+            android:textStyle="bold"
+            android:textSize="20sp"
+            android:layout_below="@id/checkbox_car"
+            android:layout_marginRight="20dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="10dp"/>
 
     </RelativeLayout>
 </android.support.v7.widget.CardView>
