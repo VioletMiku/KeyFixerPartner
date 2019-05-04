@@ -81,6 +81,45 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //Init view
         GetButtonControl();
 
+        //Auto login with Facebook account kit for second time
+        if (AccountKit.getCurrentAccessToken() != null){
+            //create dialog
+            final AlertDialog waitingDialog = new SpotsDialog(this);
+            waitingDialog.show();
+            waitingDialog.setMessage("Chờ trong giây lát");
+            waitingDialog.setCancelable(false);
+
+            AccountKit.getCurrentAccount(new AccountKitCallback<Account>() {
+                @Override
+                public void onSuccess(Account account) {
+
+                    users.child(account.getId()).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            Common.currentFixer = dataSnapshot.getValue(Fixer.class);
+                            Common.isAdmin = dataSnapshot.getValue(Fixer.class).isAdmin();
+                            Common.isActivated = dataSnapshot.getValue(Fixer.class).isActivated();
+                            Intent homeIntent = new Intent(MainActivity.this, FixerHome.class);
+                            startActivity(homeIntent);
+
+                            //dismiss dialog
+                            waitingDialog.dismiss();
+                            finish();
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
+                }
+
+                @Override
+                public void onError(AccountKitError accountKitError) {
+
+                }
+            });
+        }
 
     }
 
@@ -158,10 +197,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                         fixer.setAvatarUrl("");
                                         fixer.setRates("0.0");
                                         fixer.setCanFixHouseKey(true);//default service :))
-                                        fixer.setCanFixCarKey(false);
+                                        fixer.setCanFixCarKey(true);
                                         fixer.setCanFixBikeKey(false);
-                                        fixer.setActivated(false);
-                                        fixer.setAdmin(false);
+                                        fixer.setActivated(true);
+                                        fixer.setAdmin(true);
                                         fixer.setJobFee(500000);
                                         //register to firebase
                                         users.child(account.getId()).setValue(fixer).addOnSuccessListener(new OnSuccessListener<Void>() {

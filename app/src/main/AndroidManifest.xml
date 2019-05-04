@@ -57,9 +57,6 @@
             android:name=".FixerTracking"
             android:label="@string/title_activity_fixer_tracking" />
         <activity android:name=".CustomerCallActivity" />
-        <activity
-            android:name=".HomeActivity"
-            android:label="@string/title_activity_home" />
         <activity android:name=".MainActivity" />
         <activity android:name=".PlashScreen">
             <intent-filter>

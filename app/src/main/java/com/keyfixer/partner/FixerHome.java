@@ -129,8 +129,8 @@ public class FixerHome extends AppCompatActivity
     private static int FASTEST_INTERVAL = 3000;
     private static int DISPLACEMENT = 10;
 
-    DatabaseReference fixers;
-    GeoFire geoFire;
+    DatabaseReference house_service_location, car_service_location, bike_service_location;
+    GeoFire geoFire_for_house_service, geoFire_for_car_service, geoFire_for_bike_service;
     Marker mCurrent;
     //MaterialAnimatedSwitch location_switch;
     SupportMapFragment mapFragment;
@@ -158,61 +158,6 @@ public class FixerHome extends AppCompatActivity
     //Firebase Storage
     FirebaseStorage firebaseStorage;
     StorageReference storageReference;
-
-    Runnable drawPathRunnable = new Runnable() {
-        @Override
-        public void run() {
-            if (index < Lo_trinh.size() - 1) {
-                index++;
-                next = index + 1;
-            }
-            if (index < Lo_trinh.size() - 1) {
-                startPosition = Lo_trinh.get(index);
-                endPosition = Lo_trinh.get(next);
-            }
-
-            final ValueAnimator valueAnimator = ValueAnimator.ofFloat(0 , 1);
-            valueAnimator.setDuration(3000);
-            valueAnimator.setInterpolator(new LinearInterpolator());
-            valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                @Override
-                public void onAnimationUpdate(ValueAnimator animation) {
-                    try {
-                        v = valueAnimator.getAnimatedFraction();
-                        lng = v * endPosition.longitude + (1 - v) * startPosition.longitude;
-                        lat = v * endPosition.latitude + (1 - v) * startPosition.latitude;
-                        LatLng newPos = new LatLng(lat , lng);
-                        carMarker.setPosition(newPos);
-                        carMarker.setAnchor(0.5f , 0.5f);
-                        carMarker.setRotation(getBearing(startPosition , newPos));
-                        mMap.moveCamera(CameraUpdateFactory.newCameraPosition(
-                                new CameraPosition.Builder().target(newPos).zoom(15.5f).build()
-                        ));
-                    } catch (NullPointerException NPex) {
-                        Toast.makeText(FixerHome.this , "NullPointerException!" , Toast.LENGTH_SHORT).show();
-                    }
-                }
-            });
-            valueAnimator.start();
-            handler.postDelayed(this , 3000);
-        }
-    };
-
-    private float getBearing(LatLng startPosition , LatLng endPosition) {
-        double lat = Math.abs(startPosition.latitude - endPosition.latitude);
-        double lng = Math.abs(startPosition.longitude - endPosition.longitude);
-
-        if (startPosition.longitude < endPosition.longitude && startPosition.latitude < endPosition.latitude) {
-            return (float) (Math.toDegrees(Math.atan(lng / lat)));
-        } else if (startPosition.longitude < endPosition.longitude && startPosition.latitude >= endPosition.latitude) {
-            return (float) ((90 - Math.toDegrees(Math.atan(lng / lat))) + 90);
-        } else if (startPosition.longitude >= endPosition.longitude && startPosition.latitude >= endPosition.latitude) {
-            return (float) (Math.toDegrees(Math.atan(lng / lat)) + 180);
-        } else if (startPosition.longitude >= endPosition.longitude && startPosition.latitude < endPosition.latitude) {
-            return (float) ((90 - Math.toDegrees(Math.atan(lng / lat))) + 270);
-        }
-        return -1;
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -257,6 +202,22 @@ public class FixerHome extends AppCompatActivity
         else
             activated = "not activated";
 
+        if (Common.currentFixer.isCanFixHouseKey()) {
+            Common.used_service = "S ử a   k h ó a   n h à";
+        } else{
+            Common.used_service = "";
+        }
+        if (Common.currentFixer.isCanFixCarKey()) {
+            Common.used_service1 = "S ử a   k h ó a   x e   h ơ i";
+        } else{
+            Common.used_service1 = "";
+        }
+        if (Common.currentFixer.isCanFixBikeKey()) {
+            Common.used_service2 = "S ử a   k h ó a   x e   g ắ n   m á y";
+        } else{
+            Common.used_service2 = "";
+        }
+
         View navigationHeaderView = navigationView.getHeaderView(0);
         TextView txtName = (TextView) navigationHeaderView.findViewById(R.id.txt_FixerName);
         TextView txtStars = (TextView) navigationHeaderView.findViewById(R.id.txt_Stars);
@@ -283,18 +244,42 @@ public class FixerHome extends AppCompatActivity
                             .child("S ử a   k h ó a   n h à")
                             .child(activated)
                             .child(account.getId());
+                    Log.e("Current user references", "" + currentUserref);
+                } else {
+                    currentUserref = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl)
+                            .child("S ử a   k h ó a   n h à")
+                            .child(activated)
+                            .child(account.getId());
+                    currentUserref.setValue(null);
+                    Log.e("Current user references", "" + currentUserref + " has been removed");
                 }
                 if (Common.currentFixer.isCanFixCarKey()){
                     currentUserref = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl)
                             .child("S ử a   k h ó a   x e   h ơ i")
                             .child(activated)
                             .child(account.getId());
+                    Log.e("Current user references", "" + currentUserref);
+                } else {
+                    currentUserref = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl)
+                            .child("S ử a   k h ó a   x e   h ơ i")
+                            .child(activated)
+                            .child(account.getId());
+                    currentUserref.setValue(null);
+                    Log.e("Current user references", "" + currentUserref + " has been removed");
                 }
                 if (Common.currentFixer.isCanFixBikeKey()){
                     currentUserref = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl)
                             .child("S ử a   k h ó a   x e   g ắ n   m á y")
                             .child(activated)
                             .child(account.getId());
+                    Log.e("Current user references", "" + currentUserref);
+                } else {
+                    currentUserref = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl)
+                            .child("S ử a   k h ó a   x e   g ắ n   m á y")
+                            .child(activated)
+                            .child(account.getId());
+                    currentUserref.setValue(null);
+                    Log.e("Current user references", "" + currentUserref + " has been removed");
                 }
                 Common.currentUserref = currentUserref;
                 Common.FixerID = account.getId();
@@ -302,7 +287,7 @@ public class FixerHome extends AppCompatActivity
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         //disconnected fixer from map when they off
-                        currentUserref.onDisconnect().removeValue();
+                        Common.currentUserref.onDisconnect().removeValue();
                     }
 
                     @Override
@@ -344,16 +329,16 @@ public class FixerHome extends AppCompatActivity
 
                 //geo fire
                 if (Common.currentFixer.isCanFixHouseKey()){
-                    fixers = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl).child("S ử a   k h ó a   n h à").child(activated);
-                    geoFire = new GeoFire(fixers);
+                    house_service_location = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl).child("S ử a   k h ó a   n h à").child(activated);
+                    geoFire_for_house_service = new GeoFire(house_service_location);
                 }
                 if (Common.currentFixer.isCanFixCarKey()){
-                    fixers = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl).child("S ử a   k h ó a   x e   h ơ i").child(activated);
-                    geoFire = new GeoFire(fixers);
+                    car_service_location = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl).child("S ử a   k h ó a   x e   h ơ i").child(activated);
+                    geoFire_for_car_service = new GeoFire(car_service_location);
                 }
-                if (Common.currentFixer.isCanFixCarKey()){
-                    fixers = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl).child("S ử a   k h ó a   x e   g ắ n   m á y").child(activated);
-                    geoFire = new GeoFire(fixers);
+                if (Common.currentFixer.isCanFixBikeKey()){
+                    bike_service_location = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl).child("S ử a   k h ó a   x e   g ắ n   m á y").child(activated);
+                    geoFire_for_bike_service = new GeoFire(bike_service_location);
                 }
 
                 displayLocation();
@@ -607,16 +592,16 @@ public class FixerHome extends AppCompatActivity
             if (gpson.getVisibility() == View.VISIBLE) {
                 //geo fire
                 if (Common.currentFixer.isCanFixHouseKey()){
-                    fixers = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl).child("S ử a   k h ó a   n h à").child(activated);
-                    geoFire = new GeoFire(fixers);
+                    house_service_location = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl).child("S ử a   k h ó a   n h à").child(activated);
+                    geoFire_for_house_service = new GeoFire(house_service_location);
                 }
                 if (Common.currentFixer.isCanFixCarKey()){
-                    fixers = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl).child("S ử a   k h ó a   x e   h ơ i").child(activated);
-                    geoFire = new GeoFire(fixers);
+                    car_service_location = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl).child("S ử a   k h ó a   x e   h ơ i").child(activated);
+                    geoFire_for_car_service = new GeoFire(car_service_location);
                 }
                 if (Common.currentFixer.isCanFixBikeKey()) {
-                    fixers = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl).child("S ử a   k h ó a   x e   g ắ n   m á y").child(activated);
-                    geoFire = new GeoFire(fixers);
+                    bike_service_location = FirebaseDatabase.getInstance().getReference(Common.fixer_tbl).child("S ử a   k h ó a   x e   g ắ n   m á y").child(activated);
+                    geoFire_for_bike_service = new GeoFire(bike_service_location);
                 }
 
                 displayLocation();
@@ -660,19 +645,51 @@ public class FixerHome extends AppCompatActivity
                         AccountKit.getCurrentAccount(new AccountKitCallback<Account>() {
                             @Override
                             public void onSuccess(Account account) {
-                                geoFire.setLocation(account.getId() , new GeoLocation(latitude , longtitude) , new GeoFire.CompletionListener() {
-                                    @Override
-                                    public void onComplete(String key , DatabaseError error) {
-                                        //Add marker
-                                        if (mCurrent != null) {
-                                            mCurrent.remove(); //remove already marker
-                                        }
-                                        mCurrent = mMap.addMarker(new MarkerOptions().position(new LatLng(latitude , longtitude)).title("Bạn"));
-                                        //Move camera to this position
-                                        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude , longtitude) , 15.0f));
+                                if (Common.currentFixer.isCanFixHouseKey()){
+                                    geoFire_for_house_service.setLocation(account.getId() , new GeoLocation(latitude , longtitude) , new GeoFire.CompletionListener() {
+                                        @Override
+                                        public void onComplete(String key , DatabaseError error) {
+                                            //Add marker
+                                            if (mCurrent != null) {
+                                                mCurrent.remove(); //remove already marker
+                                            }
+                                            mCurrent = mMap.addMarker(new MarkerOptions().position(new LatLng(latitude , longtitude)).title("Bạn"));
+                                            //Move camera to this position
+                                            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude , longtitude) , 15.0f));
 
-                                    }
-                                });
+                                        }
+                                    });
+                                }
+                                if (Common.currentFixer.isCanFixCarKey()){
+                                    geoFire_for_car_service.setLocation(account.getId() , new GeoLocation(latitude , longtitude) , new GeoFire.CompletionListener() {
+                                        @Override
+                                        public void onComplete(String key , DatabaseError error) {
+                                            //Add marker
+                                            if (mCurrent != null) {
+                                                mCurrent.remove(); //remove already marker
+                                            }
+                                            mCurrent = mMap.addMarker(new MarkerOptions().position(new LatLng(latitude , longtitude)).title("Bạn"));
+                                            //Move camera to this position
+                                            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude , longtitude) , 15.0f));
+
+                                        }
+                                    });
+                                }
+                                if (Common.currentFixer.isCanFixBikeKey()){
+                                    geoFire_for_bike_service.setLocation(account.getId() , new GeoLocation(latitude , longtitude) , new GeoFire.CompletionListener() {
+                                        @Override
+                                        public void onComplete(String key , DatabaseError error) {
+                                            //Add marker
+                                            if (mCurrent != null) {
+                                                mCurrent.remove(); //remove already marker
+                                            }
+                                            mCurrent = mMap.addMarker(new MarkerOptions().position(new LatLng(latitude , longtitude)).title("Bạn"));
+                                            //Move camera to this position
+                                            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude , longtitude) , 15.0f));
+
+                                        }
+                                    });
+                                }
                             }
 
                             @Override
@@ -1002,10 +1019,12 @@ public class FixerHome extends AppCompatActivity
         if (Common.currentFixer.isCanFixHouseKey()) {
             checkboxHome.setChecked(true);
             Common.used_service = "S ử a   k h ó a   n h à";
-        } else if (Common.currentFixer.isCanFixCarKey()) {
+        }
+        if (Common.currentFixer.isCanFixCarKey()) {
             checkboxCar.setChecked(true);
             Common.used_service1 = "S ử a   k h ó a   x e   h ơ i";
-        } else if (Common.currentFixer.isCanFixBikeKey()) {
+        }
+        if (Common.currentFixer.isCanFixBikeKey()) {
             checkboxMotorbike.setChecked(true);
             Common.used_service2 = "S ử a   k h ó a   x e   g ắ n   m á y";
         }
@@ -1060,11 +1079,16 @@ public class FixerHome extends AppCompatActivity
                         Map<String, Object> updateinfo = new HashMap<>();
                         if (checkboxHome.isChecked())
                             updateinfo.put("canFixHouseKey", true);
+                        else
+                            updateinfo.put("canFixHouseKey", false);
                         if (checkboxCar.isChecked())
                             updateinfo.put("canFixCarKey", true);
+                        else
+                            updateinfo.put("canFixCarKey", false);
                         if (checkboxMotorbike.isChecked())
                             updateinfo.put("canFixBikeKey", true);
-
+                        else
+                            updateinfo.put("canFixBikeKey", false);
                         DatabaseReference fixerInformation = FirebaseDatabase.getInstance().getReference(Common.fixer_inf_tbl);
                         fixerInformation.child(account.getId())
                                 .updateChildren(updateinfo)
@@ -1325,4 +1349,60 @@ public class FixerHome extends AppCompatActivity
         }
         fusedLocationProviderClient.requestLocationUpdates(mLocationRequest , locationCallback , Looper.myLooper());
     }
+
+    Runnable drawPathRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (index < Lo_trinh.size() - 1) {
+                index++;
+                next = index + 1;
+            }
+            if (index < Lo_trinh.size() - 1) {
+                startPosition = Lo_trinh.get(index);
+                endPosition = Lo_trinh.get(next);
+            }
+
+            final ValueAnimator valueAnimator = ValueAnimator.ofFloat(0 , 1);
+            valueAnimator.setDuration(3000);
+            valueAnimator.setInterpolator(new LinearInterpolator());
+            valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator animation) {
+                    try {
+                        v = valueAnimator.getAnimatedFraction();
+                        lng = v * endPosition.longitude + (1 - v) * startPosition.longitude;
+                        lat = v * endPosition.latitude + (1 - v) * startPosition.latitude;
+                        LatLng newPos = new LatLng(lat , lng);
+                        carMarker.setPosition(newPos);
+                        carMarker.setAnchor(0.5f , 0.5f);
+                        carMarker.setRotation(getBearing(startPosition , newPos));
+                        mMap.moveCamera(CameraUpdateFactory.newCameraPosition(
+                                new CameraPosition.Builder().target(newPos).zoom(15.5f).build()
+                        ));
+                    } catch (NullPointerException NPex) {
+                        Toast.makeText(FixerHome.this , "NullPointerException!" , Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+            valueAnimator.start();
+            handler.postDelayed(this , 3000);
+        }
+    };
+
+    private float getBearing(LatLng startPosition , LatLng endPosition) {
+        double lat = Math.abs(startPosition.latitude - endPosition.latitude);
+        double lng = Math.abs(startPosition.longitude - endPosition.longitude);
+
+        if (startPosition.longitude < endPosition.longitude && startPosition.latitude < endPosition.latitude) {
+            return (float) (Math.toDegrees(Math.atan(lng / lat)));
+        } else if (startPosition.longitude < endPosition.longitude && startPosition.latitude >= endPosition.latitude) {
+            return (float) ((90 - Math.toDegrees(Math.atan(lng / lat))) + 90);
+        } else if (startPosition.longitude >= endPosition.longitude && startPosition.latitude >= endPosition.latitude) {
+            return (float) (Math.toDegrees(Math.atan(lng / lat)) + 180);
+        } else if (startPosition.longitude >= endPosition.longitude && startPosition.latitude < endPosition.latitude) {
+            return (float) ((90 - Math.toDegrees(Math.atan(lng / lat))) + 270);
+        }
+        return -1;
+    }
+
 }

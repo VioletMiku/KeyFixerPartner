@@ -90,16 +90,16 @@ public class ServiceDetailActivity extends FragmentActivity implements OnMapRead
             txtStartAddress.setText(getData().getStartAddress());
             txtTotalFee.setText(totalfee + (totalfee*0.4) + "");
 
-            if (Common.currentFixer.getServiceType().equals("S ử a   k h ó a   x e   g ắ n   m á y")){
-                Log.e("warning4", "" + Common.currentFixer.getServiceType());
+            if (Common.service_chose.equals("S ử a   k h ó a   x e   g ắ n   m á y")){
+                Log.e("warning4", "" +Common.service_chose);
                 txtServiceName.setText("Sửa khóa xe gắn máy");
                 serviceFee = Common.motorbyke_lock_service;
-            } else if (Common.currentFixer.getServiceType().equals("S ử a   k h ó a   n h à")){
-                Log.e("warning4", "" + Common.currentFixer.getServiceType());
+            } else if (Common.service_chose.equals("S ử a   k h ó a   n h à")){
+                Log.e("warning4", "" + Common.service_chose);
                 txtServiceName.setText("Sửa khóa nhà");
                 serviceFee = Common.house_lock_service;
-            } else if (Common.currentFixer.getServiceType().equals("S ử a   k h ó a   x e   h ơ i")){
-                Log.e("warning4", "" + Common.currentFixer.getServiceType());
+            } else if (Common.service_chose.equals("S ử a   k h ó a   x e   h ơ i")){
+                Log.e("warning4", "" + Common.service_chose);
                 txtServiceName.setText("Sửa khóa xe hơi");
                 serviceFee = Common.car_lock_service;
             }
@@ -111,6 +111,8 @@ public class ServiceDetailActivity extends FragmentActivity implements OnMapRead
 
             mMap.addMarker(new MarkerOptions().position(fixed).title("Đã sửa xong ở đây").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
             mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(fixed, 12.0f));
+
+            SubtractAccountFee();
         }
     }
 
@@ -137,43 +139,31 @@ public class ServiceDetailActivity extends FragmentActivity implements OnMapRead
 
     private void SubtractAccountFee(){
         final double[] fee = new double[1];
-        AccountKit.getCurrentAccount(new AccountKitCallback<Account>() {
+        final Map<String, Object> updateinfo = new HashMap<>();
+        DatabaseReference fixerInformation = FirebaseDatabase.getInstance().getReference(Common.fixer_inf_tbl).child(Common.FixerID);
+        fixerInformation.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
-            public void onSuccess(Account account) {
-
-                DatabaseReference fixerInformation = FirebaseDatabase.getInstance().getReference(Common.fixer_inf_tbl).child(Common.FixerID);
-                fixerInformation.addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        Fixer fixer = dataSnapshot.getValue(Fixer.class);
-                        fee[0] = fixer.getJobFee() - 10000;
-                        Log.e("Subtract information", "This account has been subtracted by 10000 vnd");
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-
-                    }
-                });
-                Map<String, Object> updateinfo = new HashMap<>();
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Fixer fixer = dataSnapshot.getValue(Fixer.class);
+                fee[0] = fixer.getJobFee() - 10000;
                 updateinfo.put("jobFee" , fee[0]);
-                fixerInformation.child(account.getId())
-                        .updateChildren(updateinfo)
-                        .addOnCompleteListener(new OnCompleteListener<Void>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Void> task) {
-                                if (task.isSuccessful())
-                                    Log.e("Subtract successful", "This account has been subtracted by 10000 vnd");
-                                else
-                                    Log.e("Subtract failed", "This account can't be subtracted by 10000 vnd");
-                            }
-                        });
             }
 
             @Override
-            public void onError(AccountKitError accountKitError) {
+            public void onCancelled(DatabaseError databaseError) {
 
             }
         });
+        fixerInformation.child(Common.FixerID)
+                .updateChildren(updateinfo)
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful())
+                            Log.e("Subtract successful", "This account has been subtracted by 10000 vnd");
+                        else
+                            Log.e("Subtract failed", "This account can't be subtracted by 10000 vnd");
+                    }
+                });
     }
 }

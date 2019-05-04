@@ -121,6 +121,9 @@ public class FixerTracking extends FragmentActivity implements OnMapReadyCallbac
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
+        Log.e("used service", "" + Common.used_service);
+        Log.e("used service 1", "" + Common.used_service1);
+        Log.e("used service 2", "" + Common.used_service2);
         mMap = googleMap;
         customerMarker = mMap.addCircle(new CircleOptions().center(new LatLng(Double.parseDouble(customerlat), Double.parseDouble(customerlng)))
                 .radius(50).strokeColor(Color.BLUE).fillColor(0x220000FF).strokeWidth(5.0f));
