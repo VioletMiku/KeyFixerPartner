@@ -66,14 +66,19 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.keyfixer.partner.Adapter.CustomListView_Statistical;
 import com.keyfixer.partner.Adapter.ListViewCustomAdapter_forNonActivatedAccount;
 import com.keyfixer.partner.Common.Common;
 import com.keyfixer.partner.Model.Fixer;
+import com.keyfixer.partner.Model.Statistical;
 import com.keyfixer.partner.Remote.IGoogleAPI;
 import com.rengwuxian.materialedittext.MaterialEditText;
 import com.squareup.picasso.Picasso;
+import com.vivekkaushik.datepicker.DatePickerTimeline;
+import com.vivekkaushik.datepicker.OnDateSelectedListener;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -136,6 +141,15 @@ public class StatisticalActivity extends AppCompatActivity
     //bottom sheet
     CoordinatorLayout layout_bottom_sheet;
     BottomSheetBehavior bottom_sheet_behavior;
+
+    //datePicker
+    DatePickerTimeline datePickerTimeline;
+
+    //statistical listview
+    ListView lvHistory;
+    CustomListView_Statistical adapter;
+    TextView txtTotalTripOfDay;
+    TextView txtTotalFeeOfDay;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -146,6 +160,20 @@ public class StatisticalActivity extends AppCompatActivity
     }
 
     private void Initializing() {
+        lvHistory = (ListView) findViewById(R.id.lst_request_of_day);
+        txtTotalTripOfDay = (TextView) findViewById(R.id.txtTotal);
+        txtTotalFeeOfDay = (TextView) findViewById(R.id.txt_Day_totalRequest);
+        datePickerTimeline = (DatePickerTimeline) findViewById(R.id.datePickerTimeLine);
+        datePickerTimeline.setInitialDate(Calendar.getInstance().get(Calendar.YEAR), Calendar.getInstance().get(Calendar.MONTH), Calendar.getInstance().get(Calendar.DAY_OF_MONTH));
+        datePickerTimeline.setDateTextColor(Color.WHITE);
+        datePickerTimeline.setDayTextColor(Color.WHITE);
+        datePickerTimeline.setMonthTextColor(Color.WHITE);
+        datePickerTimeline.setOnDateSelectedListener(new OnDateSelectedListener() {
+            @Override
+            public void onDateSelected(int year, int month, int day, int dayOfWeek) {
+                InitListByDate(year, month, dayOfWeek);
+            }
+        });
 
         slider = (RelativeLayout) findViewById(R.id.slider);
         final Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -268,6 +296,78 @@ public class StatisticalActivity extends AppCompatActivity
         return true;
     }
 
+    //hàm quan trọng, xóa là chết m* :)))
+    private void InitListByDate(int year, int month, int date){
+        final double[] finalTotalFee = {0};
+        final double[] totalRequest = {0};
+        final List<Statistical> list = new ArrayList<>();
+        DatabaseReference statisticalRef = FirebaseDatabase.getInstance().getReference(Common.statistical_tbl).child(Common.FixerID);
+        statisticalRef.child(year + "").child(month + "").child(date + "").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Iterable<DataSnapshot> snapshots = dataSnapshot.getChildren();
+                for (DataSnapshot item:snapshots){
+                    Statistical statistical = item.getValue(Statistical.class);
+                    finalTotalFee[0] += statistical.getTotalFee();
+                    totalRequest[0] += 1;
+                    list.add(statistical);
+                }
+                txtTotalFeeOfDay.setText("$" + finalTotalFee);
+                txtTotalTripOfDay.setText("Đã hoàn tất " + totalRequest + " chuyến");
+                adapter = new CustomListView_Statistical(getBaseContext(), R.layout.custom_listview_statistical, list);
+                lvHistory.setAdapter(adapter);
+                lvHistory.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                        Statistical item = list.get(position);
+                        ShowSpecificBill(item);
+                    }
+                });
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private void ShowSpecificBill(Statistical statistical){
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(StatisticalActivity.this);
+        LayoutInflater inflater = this.getLayoutInflater();
+        View service_bill = inflater.inflate(R.layout.specific_statistical_dialog , null);
+
+        TextView txtTotal = (TextView) service_bill.findViewById(R.id.txtTotal);
+        TextView txtCustomername = (TextView) service_bill.findViewById(R.id.txtName);
+        TextView txtCustomerPhone = (TextView) service_bill.findViewById(R.id.customer_phone);
+        TextView txtServiceName = (TextView) service_bill.findViewById(R.id.txtServiceName);
+        TextView txtServiceFee = (TextView) service_bill.findViewById(R.id.txtServiceFee);
+        TextView txtVATFee = (TextView) service_bill.findViewById(R.id.txt_ServiceVATFee);
+        TextView txtFixLocation = (TextView) service_bill.findViewById(R.id.txtFix_Location);
+        TextView txtFixTime = (TextView) service_bill.findViewById(R.id.txtFix_time);
+
+        txtTotal.setText("$" + statistical.getTotalFee());
+        txtCustomername.setText(statistical.getCustomerName());
+        String phoneNumber = statistical.getCustomerPhone().substring(0,4) + " " + statistical.getCustomerPhone().substring(5,7) + " " + statistical.getCustomerPhone().substring(8);
+        txtCustomerPhone.setText(phoneNumber);
+        txtServiceName.setText(statistical.getServiceName());
+        txtServiceFee.setText("$" + statistical.getServiceFee());
+        txtVATFee.setText("$" + statistical.getVatFee());
+        txtFixLocation.setText(statistical.getFixLocation());
+        txtFixTime.setText(statistical.getCompletedHour() + " giờ " +
+                            statistical.getCompletedMinutes() + " phút, ngày " +
+                            statistical.getCompletedMonthDate() + " tháng " +
+                            statistical.getCompletedMonth() + " năm " +
+                            statistical.getCompletedYear());
+        alertDialog.setView(service_bill);
+        alertDialog.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        alertDialog.show();
+    }
 
     private void ShowNotActivatedListDialog(List<Fixer> list) {
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(StatisticalActivity.this);

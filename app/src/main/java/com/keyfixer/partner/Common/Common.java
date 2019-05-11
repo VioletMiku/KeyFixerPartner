@@ -50,6 +50,7 @@ public class Common {
     public static double motorbyke_lock_service = 20000;
     private static double distance_rate = 1.75;
     public static String FixerID = "";
+    public static String CustomerID = "";
 
     public static Fixer currentFixer;
     public static Location mLastLocation = null;

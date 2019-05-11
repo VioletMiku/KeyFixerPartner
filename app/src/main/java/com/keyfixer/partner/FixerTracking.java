@@ -117,6 +117,7 @@ public class FixerTracking extends FragmentActivity implements OnMapReadyCallbac
             customerlat = getIntent().getStringExtra("lat");
             customerlng = getIntent().getStringExtra("lng");
             customerid = getIntent().getStringExtra("customerId");
+            Common.CustomerID = customerid;
         }
         btnCancel = (Button) findViewById(R.id.btnCancel);
         btnCancel.setOnClickListener(this);

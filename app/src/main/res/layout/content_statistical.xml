@@ -9,6 +9,62 @@
     tools:showIn="@layout/app_bar_statistical">
 
     <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingBottom="10dp">
+
+        <com.vivekkaushik.datepicker.DatePickerTimeline
+            android:id="@+id/datePickerTimeLine"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:background="@color/colorAccent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:dateTextColor="@android:color/white"
+            app:dayTextColor="@android:color/white"
+            app:monthTextColor="@android:color/white"/>
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Thu nhập được"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="@color/baseReleaseColor"
+            android:layout_below="@+id/datePickerTimeLine"
+            android:layout_marginTop="50dp"/>
+        <TextView
+            android:id="@+id/txtTotal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="$300"
+            android:textSize="30sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/holo_green_dark"
+            android:textAlignment="center"
+            android:layout_below="@+id/title"
+            android:layout_marginTop="10dp"/>
+        <TextView
+            android:id="@+id/txt_Day_totalRequest"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Đã hoàn tất 10 chuyến"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="@color/baseReleaseColor"
+            android:layout_below="@+id/txtTotal"
+            android:layout_marginTop="20dp"/>
+        <ListView
+            android:id="@+id/lst_request_of_day"
+            android:layout_below="@id/txt_Day_totalRequest"
+            android:layout_margin="15dp"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"></ListView>
+    </RelativeLayout>
+
+    <RelativeLayout
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         android:layout_marginTop="250dp"
