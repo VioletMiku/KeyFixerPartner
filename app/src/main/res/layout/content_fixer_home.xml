@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context=".FixerHome"
+    tools:showIn="@layout/app_bar_fixer_home">
+
+    <fragment
+        android:id="@+id/map"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <RelativeLayout
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:layout_marginTop="250dp"
+        android:background="@drawable/home_slide_to_right_button_corner"
+        android:id="@+id/slider"
+        android:layout_width="15dp"
+        android:layout_height="150dp">
+
+        <ImageView
+            android:layout_centerVertical="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_keyboard_arrow_right_black_24dp"
+            android:layout_gravity="center"/>
+    </RelativeLayout>
+
+    <LinearLayout
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:weightSum="10"
+        android:layout_marginTop="70dp"
+        android:orientation="horizontal"
+        android:id="@+id/old_location"
+        android:padding="16dp">
+
+        <TextView
+            android:visibility="invisible"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Vị trí của bạn "
+            android:textStyle="bold"/>
+
+        <com.github.glomadrian.materialanimatedswitch.MaterialAnimatedSwitch
+            android:visibility="invisible"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="3"
+            android:id="@+id/location_switch"
+            app:base_release_color='@color/baseReleaseColor'
+            app:base_press_color="@color/basePressColor"
+            app:ball_release_color="@color/ballReleaseColor"
+            app:ball_press_color="@android:color/white"/>
+    </LinearLayout>
+
+    <RelativeLayout
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="50dp"
+        android:layout_marginTop="100dp"
+        android:id="@+id/gps_field"
+        android:layout_gravity="right">
+
+        <ImageView
+            android:visibility="invisible"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:id="@+id/gps_on"
+            android:src="@drawable/ic_gps_fixed_black_24dp"/>
+
+        <ImageView
+            android:visibility="visible"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:id="@+id/gps_off"
+            android:src="@drawable/ic_gps_off_black_24dp" />
+
+    </RelativeLayout>
+
+    <include layout="@layout/bottom_sheet_account_fee"/>
+</android.support.design.widget.CoordinatorLayout>
