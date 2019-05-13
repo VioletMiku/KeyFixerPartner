@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/corner_custom_listview_statistical"
+    android:padding="10dp">
+
+    <RelativeLayout
+        android:layout_weight="2"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/txt_customerName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Nguyến Gia Vy"
+            android:textColor="@color/baseReleaseColor"
+            android:textStyle="bold"
+            android:textSize="16sp"/>
+
+        <TextView
+            android:id="@+id/txt_customerAddress"
+            android:layout_below="@+id/txt_customerName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="168 Phạm Văn Đồng quận Gò Vấp"
+            android:textColor="@color/baseReleaseColor"
+            android:textStyle="bold"
+            android:textSize="16sp"/>
+    </RelativeLayout>
+    <TextView
+        android:id="@+id/txt_totalFee"
+        android:layout_weight="0.5"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:textSize="18sp"
+        android:textColor="@android:color/holo_green_dark"
+        android:textStyle="bold"
+        android:text="$150"
+        android:textAlignment="center"
+        android:layout_gravity="center_vertical"/>
+
+</LinearLayout>

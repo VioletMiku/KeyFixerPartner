@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:cardElevation="10dp">
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <CheckBox
+            android:id="@+id/checkbox_house"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="S ử a   k h ó a   n h à"
+            android:textStyle="bold"
+            android:textSize="20sp"
+            android:layout_marginRight="20dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="10dp"/>
+
+        <CheckBox
+            android:id="@+id/checkbox_car"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="S ử a   k h ó a   x e   h ơ i"
+            android:textStyle="bold"
+            android:textSize="20sp"
+            android:layout_marginRight="20dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="10dp"
+            android:layout_below="@id/checkbox_house"/>
+
+        <CheckBox
+            android:id="@+id/checkbox_motorbike"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="S ử a   k h ó a   x e   g ắ n   m á y"
+            android:textStyle="bold"
+            android:textSize="20sp"
+            android:layout_below="@id/checkbox_car"
+            android:layout_marginRight="20dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="10dp"/>
+
+    </RelativeLayout>
+</android.support.v7.widget.CardView>

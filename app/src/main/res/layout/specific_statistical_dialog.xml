@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@drawable/specific_statistical_corner">
+
+    <RelativeLayout
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="60dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginBottom="10dp"
+        android:background="@drawable/corner_bill_detail"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/txtDetailTotal"
+            android:textAlignment="center"
+            android:layout_marginTop="30dp"
+            android:text="$300"
+            android:textColor="@android:color/holo_green_dark"
+            android:textStyle="bold"
+            android:textSize="30sp"/>
+
+        <LinearLayout
+            android:id="@+id/customer_nameField"
+            android:layout_marginTop="40dp"
+            android:layout_below="@+id/txtDetailTotal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:layout_weight="2"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:textColor="@color/baseReleaseColor"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginLeft="20dp"
+                android:text="Khách hàng"/>
+
+            <TextView
+                android:id="@+id/txtDetailName"
+                android:layout_weight="2"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:textColor="@color/baseReleaseColor"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginLeft="20dp"
+                android:text="Khách hàng"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/customer_PhoneField"
+            android:layout_marginTop="10dp"
+            android:layout_below="@+id/customer_nameField"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:layout_weight="2"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:textColor="@color/baseReleaseColor"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginLeft="20dp"
+                android:text="Số điện thoại"/>
+
+            <TextView
+                android:id="@+id/customer_phone"
+                android:layout_weight="2"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:textColor="@color/baseReleaseColor"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginLeft="20dp"
+                android:text="....."/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/customer_ServiceName"
+            android:layout_marginTop="10dp"
+            android:layout_below="@+id/customer_PhoneField"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:layout_weight="2"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:textColor="@color/baseReleaseColor"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginLeft="20dp"
+                android:text="Dịch vụ"/>
+
+            <TextView
+                android:id="@+id/txtServiceName"
+                android:layout_weight="2"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:textColor="@color/baseReleaseColor"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginLeft="20dp"
+                android:text="Ổ khóa nhà"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/customer_FeeField"
+            android:layout_marginTop="10dp"
+            android:layout_below="@+id/customer_ServiceName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:layout_weight="2"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:textColor="@color/baseReleaseColor"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginLeft="20dp"
+                android:text="Chi phí"/>
+
+            <TextView
+                android:id="@+id/txtServiceFee"
+                android:layout_weight="2"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:textColor="@android:color/holo_green_dark"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginLeft="20dp"
+                android:text="$20"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/customer_VATField"
+            android:layout_marginTop="10dp"
+            android:layout_below="@+id/customer_FeeField"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:layout_weight="2"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:textColor="@color/baseReleaseColor"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginLeft="20dp"
+                android:text="VAT"/>
+
+            <TextView
+                android:id="@+id/txt_ServiceVATFee"
+                android:layout_weight="2"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:textColor="@android:color/holo_green_dark"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginLeft="20dp"
+                android:text="$180"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/fix_location"
+            android:layout_marginTop="40dp"
+            android:layout_below="@+id/customer_VATField"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:layout_weight="2"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:textColor="@color/baseReleaseColor"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginLeft="20dp"
+                android:text="Nơi sửa"/>
+
+            <TextView
+                android:id="@+id/txtFix_Location"
+                android:layout_weight="2"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:textColor="@color/baseReleaseColor"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginLeft="20dp"
+                android:text="..."/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/fix_time"
+            android:layout_marginTop="40dp"
+            android:layout_below="@+id/fix_location"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:layout_weight="2"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:textColor="@color/baseReleaseColor"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginLeft="20dp"
+                android:text="Vào lúc"/>
+
+            <TextView
+                android:id="@+id/txtFix_time"
+                android:layout_weight="2"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:textColor="@color/baseReleaseColor"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginLeft="20dp"
+                android:text="..."/>
+        </LinearLayout>
+    </RelativeLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:text="Thông tin hóa đơn"
+        android:textColor="@android:color/white"
+        android:textStyle="bold"
+        android:textSize="24sp"
+        android:layout_margin="20dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf = "parent"
+        app:layout_constraintRight_toRightOf = "parent"/>
+</android.support.constraint.ConstraintLayout>
