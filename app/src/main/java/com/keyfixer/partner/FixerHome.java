@@ -811,7 +811,7 @@ public class FixerHome extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_fix_history) {
-            Intent history = new Intent(FixerHome.this, StatisticalActivity.class);
+            Intent history = new Intent(FixerHome.this, Main2Activity.class);
             startActivity(history);
         } else if (id == R.id.nav_servicetype) {
             ShowDialogupdateServiceType();

@@ -1,29 +1,19 @@
 package com.keyfixer.partner;
 
-import android.content.Context;
-import android.net.Uri;
-import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.design.widget.NavigationView;
-import android.view.LayoutInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.util.Log;
@@ -53,16 +43,7 @@ import com.facebook.accountkit.Account;
 import com.facebook.accountkit.AccountKit;
 import com.facebook.accountkit.AccountKitCallback;
 import com.facebook.accountkit.AccountKitError;
-import com.firebase.geofire.GeoFire;
 import com.github.badoualy.datepicker.DatePickerTimeline;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -83,13 +64,10 @@ import com.keyfixer.partner.Adapter.CustomListView_Statistical;
 import com.keyfixer.partner.Adapter.ListViewCustomAdapter_forNonActivatedAccount;
 import com.keyfixer.partner.Common.Common;
 import com.keyfixer.partner.Model.Fixer;
-import com.keyfixer.partner.Model.Statistical;
-import com.keyfixer.partner.Remote.IGoogleAPI;
 import com.rengwuxian.materialedittext.MaterialEditText;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -99,135 +77,9 @@ import cn.pedant.SweetAlert.SweetAlertDialog;
 import de.hdodenhof.circleimageview.CircleImageView;
 import dmax.dialog.SpotsDialog;
 
-import static android.app.Activity.RESULT_OK;
+public class Main2Activity extends AppCompatActivity
+        implements NavigationView.OnNavigationItemSelectedListener, MaterialSpinner.OnItemSelectedListener, View.OnClickListener {
 
-import android.app.ProgressDialog;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.graphics.Color;
-import android.net.Uri;
-import android.os.Build;
-import android.os.Bundle;
-import android.os.Handler;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.design.widget.BottomNavigationView;
-import android.support.design.widget.BottomSheetBehavior;
-import android.support.design.widget.CoordinatorLayout;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v7.app.AlertDialog;
-import android.text.TextUtils;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.support.v4.view.GravityCompat;
-import android.support.v7.app.ActionBarDrawerToggle;
-import android.view.MenuItem;
-import android.support.design.widget.NavigationView;
-import android.support.v4.widget.DrawerLayout;
-
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-import android.view.Menu;
-import android.widget.AdapterView;
-import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.ListView;
-import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
-import android.widget.Toast;
-
-import com.facebook.accountkit.Account;
-import com.facebook.accountkit.AccountKit;
-import com.facebook.accountkit.AccountKitCallback;
-import com.facebook.accountkit.AccountKitError;
-import com.firebase.geofire.GeoFire;
-import com.github.badoualy.datepicker.DatePickerTimeline;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.Polyline;
-import com.google.android.gms.maps.model.PolylineOptions;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.OnProgressListener;
-import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
-import com.keyfixer.partner.Adapter.CustomListView_Statistical;
-import com.keyfixer.partner.Adapter.ListViewCustomAdapter_forNonActivatedAccount;
-import com.keyfixer.partner.Common.Common;
-import com.keyfixer.partner.Model.Fixer;
-import com.keyfixer.partner.Model.Statistical;
-import com.keyfixer.partner.Remote.IGoogleAPI;
-import com.rengwuxian.materialedittext.MaterialEditText;
-import com.squareup.picasso.Picasso;
-
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
-import cn.pedant.SweetAlert.SweetAlertDialog;
-import de.hdodenhof.circleimageview.CircleImageView;
-import dmax.dialog.SpotsDialog;
-
-public class StatisticalActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener,
-        View.OnClickListener, NavigationView.OnNavigationItemSelectedListener, MaterialSpinner.OnItemSelectedListener {
-
-    private GoogleMap mMap;
-    private IGoogleAPI mService;
-    FusedLocationProviderClient fusedLocationProviderClient;
-    LocationCallback locationCallback;
-    //play services
-    private static final int MY_PERMISSION_REQUEST_CODE = 7000;
-    private static final int PLAY_SERVICE_RES_REQUEST = 7001;
-
-    private LocationRequest mLocationRequest;
-    private GoogleApiClient mGoogleAPiClient;
-
-    private static int UPDATE_INTERVAL = 5000;
-    private static int FASTEST_INTERVAL = 3000;
-    private static int DISPLACEMENT = 10;
-
-    DatabaseReference house_service_location, car_service_location, bike_service_location;
-    GeoFire geoFire_for_house_service, geoFire_for_car_service, geoFire_for_bike_service;
-    Marker mCurrent;
-    //MaterialAnimatedSwitch location_switch;
-    SupportMapFragment mapFragment;
-    ImageView gpson, gpsoff;
-    TextView txtAccountFee;
-
-    //car animation ... :3
-    private List<LatLng> Lo_trinh;
-    private Marker carMarker;
-    private float v;
-    private double lat, lng;
-    private Handler handler;
-    private LatLng startPosition, endPosition, currentPosition;
-    private int index, next;
     private String destination, activated;
     private List<Fixer> ActivatedList = null, nonActivatedList = null;
     private PolylineOptions polylineOptions, black_polylineOptions;
@@ -259,17 +111,18 @@ public class StatisticalActivity extends AppCompatActivity implements BottomNavi
     MaterialSpinner spinner;
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.content_statistical);
-
-        slider = (RelativeLayout) findViewById(R.id.slider);
-        final Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setContentView(R.layout.activity_main2);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        final DrawerLayout drawer = findViewById(R.id.drawer_layout1);
+        slider = (RelativeLayout) findViewById(R.id.slider1);
+
+        final DrawerLayout drawer = findViewById(R.id.drawer_layout2);
         final NavigationView navigationView = findViewById(R.id.nav_view);
-        final ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        final ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
         navigationView.setNavigationItemSelectedListener(this);
@@ -343,11 +196,46 @@ public class StatisticalActivity extends AppCompatActivity implements BottomNavi
             getSupportFragmentManager().beginTransaction().replace(R.id.fragment, fragment).commit();
     }
 
+
     @Override
-    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+    public void onBackPressed() {
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.main2, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_settings) {
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    @SuppressWarnings("StatementWithEmptyBody")
+    @Override
+    public boolean onNavigationItemSelected(MenuItem item) {
+        // Handle navigation view item clicks here.
         switch (item.getItemId()) {
             case R.id.nav_fix_history:
-                Intent intent = new Intent(this, StatisticalActivity.class);
+                Intent intent = new Intent(Main2Activity.this, Main2Activity.class);
                 startActivity(intent);
                 break;
             case R.id.nav_servicetype:
@@ -366,7 +254,7 @@ public class StatisticalActivity extends AppCompatActivity implements BottomNavi
                 getActivatedList();
                 break;
             case R.id.nav_fix_home:
-                Intent home = new Intent(this, FixerHome.class);
+                Intent home = new Intent(Main2Activity.this, FixerHome.class);
                 startActivity(home);
                 break;
         }
@@ -374,6 +262,8 @@ public class StatisticalActivity extends AppCompatActivity implements BottomNavi
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+
+
 
     private void toggleVisibility(Menu menu, int id, boolean visible) {
         menu.findItem(id).setVisible(visible);
@@ -1006,5 +896,3 @@ public class StatisticalActivity extends AppCompatActivity implements BottomNavi
         }
     }
 }
-
-

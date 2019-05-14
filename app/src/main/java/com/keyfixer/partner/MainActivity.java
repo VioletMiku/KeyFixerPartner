@@ -99,7 +99,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             Common.currentFixer = dataSnapshot.getValue(Fixer.class);
                             Common.isAdmin = dataSnapshot.getValue(Fixer.class).isAdmin();
                             Common.isActivated = dataSnapshot.getValue(Fixer.class).isActivated();
-                            Intent homeIntent = new Intent(MainActivity.this, FixerHome.class);
+                            Intent homeIntent =new Intent(MainActivity.this, FixerHome.class);
                             startActivity(homeIntent);
 
                             //dismiss dialog
