@@ -23,6 +23,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.jaredrummler.materialspinner.MaterialSpinner;
 import com.keyfixer.partner.Adapter.CustomListView_Statistical;
 import com.keyfixer.partner.Common.Common;
 import com.keyfixer.partner.Model.Statistical;
@@ -67,7 +68,6 @@ public class DailyStatisticalFragment extends Fragment{
                 InitListByDate(year, month, day);
             }
         });
-
     }
 
     //hàm quan trọng, xóa là chết m* :)))
@@ -82,13 +82,12 @@ public class DailyStatisticalFragment extends Fragment{
                 Iterable<DataSnapshot> snapshots = dataSnapshot.getChildren();
                 for (DataSnapshot item:snapshots){
                     Statistical statistical = item.getValue(Statistical.class);
-                    Log.e("data", "" + statistical.toString());
                     finalTotalFee[0] += statistical.getTotalFee();
                     totalRequest[0] += 1;
                     list.add(statistical);
                 }
                 txtTotalFeeOfDay.setText("$" + finalTotalFee[0]);
-                txtTotalTripOfDay.setText("Đã hoàn tất " + totalRequest[0] + " chuyến");
+                txtTotalTripOfDay.setText("Đã hoàn tất " + (int) totalRequest[0] + " chuyến");
                 adapter = new CustomListView_Statistical(context, R.layout.custom_listview_statistical, list);
                 lvHistory.setAdapter(adapter);
                 lvHistory.setOnItemClickListener(new AdapterView.OnItemClickListener() {

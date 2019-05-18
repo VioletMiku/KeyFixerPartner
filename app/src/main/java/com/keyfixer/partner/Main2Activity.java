@@ -1,7 +1,6 @@
 package com.keyfixer.partner;
 
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
@@ -107,7 +106,6 @@ public class Main2Activity extends AppCompatActivity
     CustomListView_Statistical adapter;
     TextView txtTotalTripOfDay;
     TextView txtTotalFeeOfDay;
-    Context context;
     MaterialSpinner spinner;
 
     @Override
@@ -137,7 +135,7 @@ public class Main2Activity extends AppCompatActivity
         Common.isAdmin = Common.currentFixer.isAdmin();
         if (Common.currentFixer.getJobFee() <= 0){
             Common.isActivated = false;
-            Toast.makeText(context , "Tài khoản vừa hết tiền" , Toast.LENGTH_SHORT).show();
+            Toast.makeText(Main2Activity.this , "Tài khoản vừa hết tiền" , Toast.LENGTH_SHORT).show();
         }
         if (Common.isAdmin){
             toggleVisibility(navigationView.getMenu(), R.id.nav_provide_admin_rights, true);
@@ -172,7 +170,7 @@ public class Main2Activity extends AppCompatActivity
         txtName.setText(Common.currentFixer.getStrName());
         txtStars.setText(Common.currentFixer.getRates());
         if (Common.currentFixer.getAvatarUrl() != null && !TextUtils.isEmpty(Common.currentFixer.getAvatarUrl())) {
-            Picasso.with(context).load(Common.currentFixer.getAvatarUrl()).into(imageAvatar);
+            Picasso.with(Main2Activity.this).load(Common.currentFixer.getAvatarUrl()).into(imageAvatar);
         }
         spinner = (MaterialSpinner) findViewById(R.id.spinner);
         spinner.setItems("Thống kê hàng ngày", "Thống kê theo quý");
@@ -258,7 +256,7 @@ public class Main2Activity extends AppCompatActivity
                 startActivity(home);
                 break;
         }
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout2);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
@@ -269,8 +267,8 @@ public class Main2Activity extends AppCompatActivity
         menu.findItem(id).setVisible(visible);
     }
 
-    private void ShowNotActivatedListDialog(List<Fixer> list) {
-        AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
+    private void ShowNotActivatedListDialog(final List<Fixer> list) {
+        final AlertDialog.Builder alertDialog = new AlertDialog.Builder(Main2Activity.this);
         LayoutInflater inflater = this.getLayoutInflater();
         View nonactivated_account = inflater.inflate(R.layout.layout_fixerlist_waiting_for_check , null);
 
@@ -283,20 +281,20 @@ public class Main2Activity extends AppCompatActivity
 
         if (Common.currentFixer != null){
             if (Common.currentFixer.getAvatarUrl() != null && !TextUtils.isEmpty(Common.currentFixer.getAvatarUrl())){
-                Picasso.with(context).load(Common.currentFixer.getAvatarUrl()).into(avatar);
+                Picasso.with(this).load(Common.currentFixer.getAvatarUrl()).into(avatar);
             }
             personal_name.setText(Common.currentFixer.getStrName());
             personal_email.setText(Common.currentFixer.getStrEmail());
         }
 
         if (list != null){
-            adapter = new ListViewCustomAdapter_forNonActivatedAccount(context, R.layout.layout_custom_listview_nonactivated_account, list);
+            adapter = new ListViewCustomAdapter_forNonActivatedAccount(this, R.layout.layout_custom_listview_nonactivated_account, list);
             listView_nonActivatedAccount.setAdapter(adapter);
             listView_nonActivatedAccount.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent , View view , int position , long id) {
-                    Fixer fixer = getNonActivatedList().get(position);
-                    ActiveAccount(fixer);
+                    Fixer fixer = list.get(position);
+                    ActiveAccount(fixer, list, listView_nonActivatedAccount);
                 }
             });
             progressBar.setVisibility(View.INVISIBLE);
@@ -313,10 +311,10 @@ public class Main2Activity extends AppCompatActivity
         alertDialog.show();
     }
 
-    private void ShowActivatedListDialog(List<Fixer> list) {
-        AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
+    private void ShowActivatedListDialog(final List<Fixer> list) {
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(Main2Activity.this);
         LayoutInflater inflater = this.getLayoutInflater();
-        View nonactivated_account = inflater.inflate(R.layout.layout_fixerlist_waiting_for_check , null);
+        View nonactivated_account = inflater.inflate(R.layout.layout_add_admin_rule , null);
 
         final CircleImageView avatar = (CircleImageView) nonactivated_account.findViewById(R.id.personal_avatar_);
         final TextView personal_name = (TextView) nonactivated_account.findViewById(R.id.personal_name_);
@@ -327,19 +325,19 @@ public class Main2Activity extends AppCompatActivity
 
         if (Common.currentFixer != null){
             if (Common.currentFixer.getAvatarUrl() != null && !TextUtils.isEmpty(Common.currentFixer.getAvatarUrl())){
-                Picasso.with(context).load(Common.currentFixer.getAvatarUrl()).into(avatar);
+                Picasso.with(Main2Activity.this).load(Common.currentFixer.getAvatarUrl()).into(avatar);
             }
             personal_name.setText(Common.currentFixer.getStrName());
             personal_email.setText(Common.currentFixer.getStrEmail());
         }
 
         if (list != null){
-            adapter = new ListViewCustomAdapter_forNonActivatedAccount(context, R.layout.layout_custom_listview_nonactivated_account, list);
+            adapter = new ListViewCustomAdapter_forNonActivatedAccount(Main2Activity.this, R.layout.layout_custom_listview_nonactivated_account, list);
             listView_nonActivatedAccount.setAdapter(adapter);
             listView_nonActivatedAccount.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent , View view , int position , long id) {
-                    Fixer fixer = getNonActivatedList().get(position);
+                    Fixer fixer = list.get(position);
                     AddAdminRuleAccount(fixer);
                 }
             });
@@ -368,7 +366,7 @@ public class Main2Activity extends AppCompatActivity
                     Iterable<DataSnapshot> snapshots = dataSnapshot.getChildren();
                     for (DataSnapshot item:snapshots){
                         Fixer fixer = item.getValue(Fixer.class);
-                        if (fixer.isActivated())
+                        if (fixer.isActivated() && !fixer.isAdmin())
                             ActivatedList.add(fixer);
                     }
                     ShowActivatedListDialog(ActivatedList);
@@ -413,111 +411,77 @@ public class Main2Activity extends AppCompatActivity
         return nonActivatedList;
     }
 
-    private void ActiveAccount(final Fixer item){
-        android.app.AlertDialog.Builder builder;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-            builder = new android.app.AlertDialog.Builder(context , android.R.style.Theme_Material_Dialog_Alert);
-        else
-            builder = new android.app.AlertDialog.Builder(context);
+    private void ActiveAccount(final Fixer model, final List<Fixer> fixerList, final ListView listView){
+        final Map<String, Object> updateinfo = new HashMap<>();
+        updateinfo.put("activated" , true);
 
-        builder.setMessage("Kích hoạt tài khoản cho thợ " + item.getStrName()).setPositiveButton("Kích hoạt" , new DialogInterface.OnClickListener() {
+        final DatabaseReference fixer_tbl = FirebaseDatabase.getInstance().getReference(Common.fixer_inf_tbl);
+        fixer_tbl.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
-            public void onClick(DialogInterface dialog , int which) {
-                dialog.dismiss();
-                final android.app.AlertDialog waitingDialog = new SpotsDialog(context);
-                waitingDialog.show();
-
-                AccountKit.getCurrentAccount(new AccountKitCallback<Account>() {
-                    @Override
-                    public void onSuccess(Account account) {
-                        boolean isActive = true;
-
-                        Map<String, Object> updateinfo = new HashMap<>();
-                        updateinfo.put("activated" , isActive);
-
-                        DatabaseReference fixerInformation = FirebaseDatabase.getInstance().getReference(Common.fixer_inf_tbl);
-                        fixerInformation.child(account.getId())
-                                .updateChildren(updateinfo)
-                                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                    @Override
-                                    public void onComplete(@NonNull Task<Void> task) {
-                                        if (task.isSuccessful())
-                                            ActiveSuccess();
-                                        else
-                                            ActiveFailed();
-                                        waitingDialog.dismiss();
-                                    }
-                                });
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Iterable<DataSnapshot> snapshots = dataSnapshot.getChildren(); // lấy danh sách fixer trong bảng fixer
+                for (DataSnapshot item:snapshots){
+                    final Fixer fixer = item.getValue(Fixer.class); // lấy từng fixer trong danh sách fixer lấy được
+                    if (fixer.getStrPhone().equals(model.getStrPhone())){
+                        fixer_tbl.child(item.getKey()).updateChildren(updateinfo).addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                if (task.isSuccessful()) {
+                                    fixerList.remove(fixer);
+                                    ListViewCustomAdapter_forNonActivatedAccount adapter =
+                                            new ListViewCustomAdapter_forNonActivatedAccount(Main2Activity.this, R.layout.layout_custom_listview_nonactivated_account, fixerList);
+                                    listView.setAdapter(adapter);
+                                    ActiveSuccess();
+                                }
+                                else
+                                    ActiveFailed();
+                            }
+                        });
                     }
-
-                    @Override
-                    public void onError(AccountKitError accountKitError) {
-
-                    }
-                });
+                }
             }
-        }).setNegativeButton("Hủy" , new DialogInterface.OnClickListener() {
+
             @Override
-            public void onClick(DialogInterface dialog , int which) {
-                dialog.dismiss();
+            public void onCancelled(DatabaseError databaseError) {
+
             }
         });
-        builder.show();
     }
 
-    private void AddAdminRuleAccount(final Fixer item) {
-        android.app.AlertDialog.Builder builder;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-            builder = new android.app.AlertDialog.Builder(context , android.R.style.Theme_Material_Dialog_Alert);
-        else
-            builder = new android.app.AlertDialog.Builder(context);
+    private void AddAdminRuleAccount(final Fixer model) {
+        final Map<String, Object> updateinfo = new HashMap<>();
+        updateinfo.put("admin" , true);
 
-        builder.setMessage("Thêm quyền admin tài khoản  " + item.getStrName()).setPositiveButton("Thêm" , new DialogInterface.OnClickListener() {
+        final DatabaseReference fixerInformation = FirebaseDatabase.getInstance().getReference(Common.fixer_inf_tbl);
+        fixerInformation.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
-            public void onClick(DialogInterface dialog , int which) {
-                dialog.dismiss();
-                final android.app.AlertDialog waitingDialog = new SpotsDialog(context);
-                waitingDialog.show();
-
-                AccountKit.getCurrentAccount(new AccountKitCallback<Account>() {
-                    @Override
-                    public void onSuccess(Account account) {
-
-                        Map<String, Object> updateinfo = new HashMap<>();
-                        updateinfo.put("admin" , true);
-
-                        DatabaseReference fixerInformation = FirebaseDatabase.getInstance().getReference(Common.fixer_inf_tbl);
-                        fixerInformation.child(account.getId())
-                                .updateChildren(updateinfo)
-                                .addOnCompleteListener(new OnCompleteListener<Void>() {
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Iterable<DataSnapshot> snapshots = dataSnapshot.getChildren();
+                for (DataSnapshot item:snapshots){
+                    Fixer fixer = item.getValue(Fixer.class);
+                    if (fixer.getStrPhone().equals(model.getStrPhone())){
+                        fixerInformation.child(item.getKey()).updateChildren(updateinfo).addOnCompleteListener(new OnCompleteListener<Void>() {
                                     @Override
                                     public void onComplete(@NonNull Task<Void> task) {
                                         if (task.isSuccessful())
                                             AddAdminRuleSuccess();
                                         else
                                             AddAdminRuleFailed();
-                                        waitingDialog.dismiss();
                                     }
                                 });
                     }
-
-                    @Override
-                    public void onError(AccountKitError accountKitError) {
-
-                    }
-                });
+                }
             }
-        }).setNegativeButton("Hủy" , new DialogInterface.OnClickListener() {
+
             @Override
-            public void onClick(DialogInterface dialog , int which) {
-                dialog.dismiss();
+            public void onCancelled(DatabaseError databaseError) {
+
             }
         });
-        builder.show();
     }
 
     private void ShowDialogupdateServiceType() {
-        AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(Main2Activity.this);
         alertDialog.setTitle("Cập nhật loại dịch vụ");
         alertDialog.setMessage("Chọn loại dịch vụ bạn có thể sửa");
         LayoutInflater inflater = this.getLayoutInflater();
@@ -580,7 +544,7 @@ public class Main2Activity extends AppCompatActivity
             @Override
             public void onClick(DialogInterface dialogInterface , int i) {
                 dialogInterface.dismiss();
-                final android.app.AlertDialog waitingDialog = new SpotsDialog(context);
+                final android.app.AlertDialog waitingDialog = new SpotsDialog(Main2Activity.this);
                 waitingDialog.show();
 
                 AccountKit.getCurrentAccount(new AccountKitCallback<Account>() {
@@ -667,7 +631,7 @@ public class Main2Activity extends AppCompatActivity
     }
 
     private void ShowDialogUpdateInfo() {
-        AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(Main2Activity.this);
         alertDialog.setTitle("Cập nhật thông tin");
         alertDialog.setMessage("Vui lòng cung cấp đầy đủ thông tin");
         LayoutInflater inflater = this.getLayoutInflater();
@@ -683,7 +647,7 @@ public class Main2Activity extends AppCompatActivity
             @Override
             public void onClick(DialogInterface dialogInterface , int i) {
                 dialogInterface.dismiss();
-                final android.app.AlertDialog waitingDialog = new SpotsDialog(context);
+                final android.app.AlertDialog waitingDialog = new SpotsDialog(Main2Activity.this);
                 waitingDialog.show();
 
                 AccountKit.getCurrentAccount(new AccountKitCallback<Account>() {
@@ -740,7 +704,7 @@ public class Main2Activity extends AppCompatActivity
     }
 
     private void ActiveSuccess(){
-        SweetAlertDialog dialog = new SweetAlertDialog(context, SweetAlertDialog.SUCCESS_TYPE);
+        SweetAlertDialog dialog = new SweetAlertDialog(Main2Activity.this, SweetAlertDialog.SUCCESS_TYPE);
         dialog.getProgressHelper().setBarColor(Color.parseColor("#A5DC86"));
         dialog.setTitleText("Kích hoạt thành công!");
         dialog.setCancelable(true);
@@ -748,7 +712,7 @@ public class Main2Activity extends AppCompatActivity
     }
 
     private void ActiveFailed(){
-        SweetAlertDialog dialog = new SweetAlertDialog(context, SweetAlertDialog.ERROR_TYPE);
+        SweetAlertDialog dialog = new SweetAlertDialog(Main2Activity.this, SweetAlertDialog.ERROR_TYPE);
         dialog.getProgressHelper().setBarColor(Color.parseColor("#A5DC86"));
         dialog.setTitleText("Kích hoạt thất bại!");
         dialog.setCancelable(true);
@@ -756,7 +720,7 @@ public class Main2Activity extends AppCompatActivity
     }
 
     private void AddAdminRuleSuccess(){
-        SweetAlertDialog dialog = new SweetAlertDialog(context, SweetAlertDialog.SUCCESS_TYPE);
+        SweetAlertDialog dialog = new SweetAlertDialog(Main2Activity.this, SweetAlertDialog.SUCCESS_TYPE);
         dialog.getProgressHelper().setBarColor(Color.parseColor("#A5DC86"));
         dialog.setTitleText("Thêm quyền thành công!");
         dialog.setCancelable(true);
@@ -764,7 +728,7 @@ public class Main2Activity extends AppCompatActivity
     }
 
     private void AddAdminRuleFailed(){
-        SweetAlertDialog dialog = new SweetAlertDialog(context, SweetAlertDialog.ERROR_TYPE);
+        SweetAlertDialog dialog = new SweetAlertDialog(Main2Activity.this, SweetAlertDialog.ERROR_TYPE);
         dialog.getProgressHelper().setBarColor(Color.parseColor("#A5DC86"));
         dialog.setTitleText("Không thể thêm quyền!");
         dialog.setCancelable(true);
@@ -772,7 +736,7 @@ public class Main2Activity extends AppCompatActivity
     }
 
     private void UpdateSuccess(){
-        SweetAlertDialog dialog = new SweetAlertDialog(context, SweetAlertDialog.SUCCESS_TYPE);
+        SweetAlertDialog dialog = new SweetAlertDialog(Main2Activity.this, SweetAlertDialog.SUCCESS_TYPE);
         dialog.getProgressHelper().setBarColor(Color.parseColor("#A5DC86"));
         dialog.setTitleText("Cập nhật thành công!");
         dialog.setCancelable(true);
@@ -780,7 +744,7 @@ public class Main2Activity extends AppCompatActivity
     }
 
     private void UpdateFailed(){
-        SweetAlertDialog dialog = new SweetAlertDialog(context, SweetAlertDialog.ERROR_TYPE);
+        SweetAlertDialog dialog = new SweetAlertDialog(Main2Activity.this, SweetAlertDialog.ERROR_TYPE);
         dialog.getProgressHelper().setBarColor(Color.parseColor("#A5DC86"));
         dialog.setTitleText("Cập nhật thất bại!");
         dialog.setCancelable(true);
@@ -790,15 +754,15 @@ public class Main2Activity extends AppCompatActivity
     private void Signout() {
         android.app.AlertDialog.Builder builder;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-            builder = new android.app.AlertDialog.Builder(context , android.R.style.Theme_Material_Dialog_Alert);
+            builder = new android.app.AlertDialog.Builder(Main2Activity.this , android.R.style.Theme_Material_Dialog_Alert);
         else
-            builder = new android.app.AlertDialog.Builder(context);
+            builder = new android.app.AlertDialog.Builder(Main2Activity.this);
 
         builder.setMessage("Thật sự muốn thoát!?").setPositiveButton(android.R.string.ok , new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog , int which) {
                 AccountKit.logOut();
-                Intent intent = new Intent(context , MainActivity.class);
+                Intent intent = new Intent(Main2Activity.this , MainActivity.class);
                 startActivity(intent);
             }
         }).setNegativeButton(android.R.string.cancel , new DialogInterface.OnClickListener() {
@@ -811,7 +775,7 @@ public class Main2Activity extends AppCompatActivity
     }
 
     private void AlertUser(){
-        SweetAlertDialog dialog = new SweetAlertDialog(context, SweetAlertDialog.WARNING_TYPE);
+        SweetAlertDialog dialog = new SweetAlertDialog(Main2Activity.this, SweetAlertDialog.WARNING_TYPE);
         dialog.getProgressHelper().setBarColor(Color.parseColor("#A5DC86"));
         dialog.setTitleText("Vui lòng tái kích hoạt GPS trên thiết bị để cập nhật lại dịch vụ");
         dialog.setCancelable(true);
@@ -865,9 +829,9 @@ public class Main2Activity extends AppCompatActivity
                                                     public void onComplete(@NonNull Task<Void> task) {
                                                         if (task.isSuccessful())
 
-                                                            Toast.makeText(context , "Tải hoàn tất" , Toast.LENGTH_SHORT).show();
+                                                            Toast.makeText(Main2Activity.this , "Tải hoàn tất" , Toast.LENGTH_SHORT).show();
                                                         else
-                                                            Toast.makeText(context , "Tải thất bại" , Toast.LENGTH_SHORT).show();
+                                                            Toast.makeText(Main2Activity.this , "Tải thất bại" , Toast.LENGTH_SHORT).show();
                                                     }
                                                 });
                                     }
