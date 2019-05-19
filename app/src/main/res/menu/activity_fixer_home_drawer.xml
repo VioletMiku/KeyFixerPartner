@@ -13,6 +13,11 @@
             android:icon="@drawable/ic_history"
             android:title="Lịch sử" />
         <item
+            android:id="@+id/nav_statistical_management"
+            android:icon="@drawable/icon_statistical_management"
+            android:visible="false"
+            android:title="Quản lý thống kê" />
+        <item
             android:id="@+id/nav_servicetype"
             android:icon="@drawable/ic_service_black_24dp"
             android:title="Chọn loại dịch vụ" />

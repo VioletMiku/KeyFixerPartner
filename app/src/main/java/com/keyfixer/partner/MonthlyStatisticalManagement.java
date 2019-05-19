@@ -1,36 +1,40 @@
 package com.keyfixer.partner;
 
 import android.content.Context;
-import android.content.Intent;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
+import android.text.Editable;
 import android.text.SpannableString;
+import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.RelativeSizeSpan;
 import android.text.style.StyleSpan;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.CompoundButton;
+import android.widget.AdapterView;
+import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.RadioButton;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import com.facebook.accountkit.ui.LoginFlowState;
+import com.github.badoualy.datepicker.DatePickerTimeline;
 import com.github.mikephil.charting.animation.Easing;
-import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.PieChart;
 import com.github.mikephil.charting.components.Description;
 import com.github.mikephil.charting.components.Legend;
-import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
@@ -39,43 +43,49 @@ import com.github.mikephil.charting.formatter.PercentFormatter;
 import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.github.mikephil.charting.utils.ColorTemplate;
-import com.github.mikephil.charting.charts.BarChart;
-import com.github.mikephil.charting.components.XAxis;
-import com.github.mikephil.charting.components.XAxis.XAxisPosition;
-import com.github.mikephil.charting.data.BarData;
-import com.github.mikephil.charting.data.BarDataSet;
-import com.github.mikephil.charting.data.BarEntry;
-import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
-import com.github.mikephil.charting.interfaces.datasets.IDataSet;
-import com.github.mikephil.charting.utils.ColorTemplate;
-
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.jaredrummler.materialspinner.MaterialSpinner;
+import com.keyfixer.partner.Adapter.CustomGridView_statisticalManagement;
 import com.keyfixer.partner.Adapter.CustomListViewAdapter_forEachDayStatistical;
 import com.keyfixer.partner.Adapter.CustomListView_Statistical;
 import com.keyfixer.partner.Common.Common;
+import com.keyfixer.partner.Helper.ExpandableHeightGridView;
 import com.keyfixer.partner.Model.DailyStatistical;
+import com.keyfixer.partner.Model.Fixer;
 import com.keyfixer.partner.Model.Statistical;
+import com.squareup.picasso.Picasso;
 
-import java.time.Month;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
-public class MonthlyStatisticalFragment extends Fragment
-        implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener, MaterialSpinner.OnItemSelectedListener, OnChartValueSelectedListener {
+public class MonthlyStatisticalManagement extends Fragment implements OnChartValueSelectedListener {
+    View view, dialogView;
+    Context context;
+    ExpandableHeightGridView grid;
+    ProgressBar progressBar;
+    TextView txtTotalTripOfDay;
+    TextView txtTotalFeeOfDay;
+    TextView txtTotalRevenue;
+    EditText txtSearchString;
+    //datePicker
+    DatePickerTimeline datePickerTimeline;
 
-    private static final int PERMISSION_STORAGE = 0;
+    //statistical listview
+    ListView lvHistory;
+    CustomListView_Statistical adapter;
+
+    //personal card
+    RelativeLayout personalCard;
+
 
     protected Typeface tfRegular;
     protected Typeface tfLight;
     PieChart totalChart;
-    View view;
-    Context context;
     MaterialSpinner spinner;
     RadioButton quy1, quy2, quy3, quy4;
     private Typeface tf;
@@ -86,7 +96,7 @@ public class MonthlyStatisticalFragment extends Fragment
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        view = inflater.inflate(R.layout.weeklystatistical_fragment, null);
+        view = inflater.inflate(R.layout.monthly_statistical_management, null);
         this.context = container.getContext();
         Initializing(view);
         tfRegular = Typeface.createFromAsset(getActivity().getAssets(), "fonts/OpenSans-Regular.ttf");
@@ -95,71 +105,256 @@ public class MonthlyStatisticalFragment extends Fragment
     }
 
     private void Initializing(View view) {
-        TongDoanhThuTrongQuy = (TextView) view.findViewById(R.id.TongDoanhThuCuaQuy);
-        month1 = (TextView) view.findViewById(R.id.Month1);
-        month2 = (TextView) view.findViewById(R.id.Month2);
-        month3 = (TextView) view.findViewById(R.id.Month3);
-        lvMonth1 = (ListView) view.findViewById(R.id.FirstMonth);
-        lvMonth2 = (ListView) view.findViewById(R.id.SecondMonth);
-        lvMonth3 = (ListView) view.findViewById(R.id.ThirdMonth);
+        InitTotalRevenue(view);
+        InitPersonalCard(view);
+        InitGridContents(view);
+    }
+
+    private void InitTotalRevenue(View view) {
+        txtTotalRevenue = (TextView) view.findViewById(R.id.totalRevenue1);
+        final DatabaseReference statistical_tbl = FirebaseDatabase.getInstance().getReference(Common.statistical_tbl);
+        statistical_tbl.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                final double[] Revenue = {0};
+                Iterable<DataSnapshot> fixers = dataSnapshot.getChildren();
+                for (DataSnapshot fixer:fixers){
+                    Iterable<DataSnapshot> years = fixer.getChildren();
+                    for (DataSnapshot year:years){
+                        Iterable<DataSnapshot> months = year.getChildren();
+                        for (DataSnapshot month:months){
+                            Iterable<DataSnapshot> dates = month.getChildren();
+                            for (DataSnapshot date:dates){
+                                Iterable<DataSnapshot> statisticals = date.getChildren();
+                                for (DataSnapshot item:statisticals){
+                                    Statistical statistical = item.getValue(Statistical.class);
+                                    Revenue[0] += statistical.getTotalFee();
+                                }
+                            }
+                        }
+                    }
+                }
+                txtTotalRevenue.setText("$" + Revenue[0]);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private void InitPersonalCard(View view) {
+        personalCard = (RelativeLayout) view.findViewById(R.id.personal_card1);
+        personalCard.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                DatabaseReference fixer_tbl = FirebaseDatabase.getInstance().getReference(Common.fixer_inf_tbl);
+                fixer_tbl.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        Iterable<DataSnapshot> snapshots = dataSnapshot.getChildren();
+                        for (DataSnapshot item:snapshots){
+                            Fixer fixer = item.getValue(Fixer.class);
+                            if (fixer.getStrPhone().equals(Common.currentFixer.getStrPhone())){
+                                InitMonthlyStatistical(item.getKey());
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+            }
+        });
+        grid = (ExpandableHeightGridView) view.findViewById(R.id.grid1);
+        grid.setExpanded(true);
+        progressBar = (ProgressBar) view.findViewById(R.id.progressBar2);
+        ImageView img = (ImageView) view.findViewById(R.id.admin_avatar1);
+        TextView txtfixerName = (TextView) view.findViewById(R.id.fixer_username1);
+
+        if (Common.currentFixer.getAvatarUrl() != null && !TextUtils.isEmpty(Common.currentFixer.getAvatarUrl()))
+            Picasso.with(context).load(Common.currentFixer.getAvatarUrl()).into(img);
+        txtfixerName.setText(Common.currentFixer.getStrName());
+    }
+
+    private void InitGridContents(final View view) {
+        txtSearchString = (EditText) view.findViewById(R.id.searchBar1_);
+        final List<Fixer> fixers = new ArrayList<>();
+        DatabaseReference fixer_tbl = FirebaseDatabase.getInstance().getReference(Common.fixer_inf_tbl);
+        fixer_tbl.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Iterable<DataSnapshot> snapshots = dataSnapshot.getChildren();
+                for (DataSnapshot item:snapshots){
+                    Fixer fixer = item.getValue(Fixer.class);
+                    if (!fixer.getStrPhone().equals(Common.currentFixer.getStrPhone()) && !item.getKey().equals(Common.FixerID)){
+                        fixers.add(fixer);
+                    }
+                }
+                IntegrateWithGridView(fixers);
+                txtSearchString.addTextChangedListener(new TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                        grid.setAdapter(null);
+                    }
+
+                    @Override
+                    public void onTextChanged(CharSequence s, int start, int before, int count) {
+                        grid.setAdapter(null);
+                        final List<Fixer> searchedContents = new ArrayList<>();
+                        for (Fixer item:fixers){
+                            if (item.getStrName().contains(s.toString()))
+                                searchedContents.add(item);
+                        }
+                        if (searchedContents != null){
+                            progressBar.setVisibility(View.INVISIBLE);
+                            CustomGridView_statisticalManagement adapter = new CustomGridView_statisticalManagement(context, R.layout.grid_single, searchedContents);
+                            grid.setAdapter(adapter);
+                            grid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                                @Override
+                                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                                    Fixer fixer = searchedContents.get(position);
+                                    GridView_onItemClick(fixer);
+                                }
+                            });
+                        }
+                        if (s.toString() == null || TextUtils.isEmpty(s.toString()))
+                            IntegrateWithGridView(fixers);
+                    }
+
+                    @Override
+                    public void afterTextChanged(Editable s) {
+
+                    }
+                });
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private void IntegrateWithGridView(final List<Fixer> fixers) {
+        grid.setAdapter(null);
+        if (fixers != null){
+            progressBar.setVisibility(View.INVISIBLE);
+            CustomGridView_statisticalManagement adapter = new CustomGridView_statisticalManagement(context, R.layout.grid_single, fixers);
+            grid.setAdapter(adapter);
+            grid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    Fixer fixer = fixers.get(position);
+                    GridView_onItemClick(fixer);
+                }
+            });
+        }
+    }
+
+    private void GridView_onItemClick(final Fixer model) {
+        DatabaseReference fixer_tbl = FirebaseDatabase.getInstance().getReference(Common.fixer_inf_tbl);
+        fixer_tbl.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Iterable<DataSnapshot> snapshots = dataSnapshot.getChildren();
+                for (DataSnapshot item:snapshots){
+                    Fixer fixer = item.getValue(Fixer.class);
+                    if (fixer.getStrPhone().equals(model.getStrPhone())){
+                        InitMonthlyStatistical(item.getKey());
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private void InitMonthlyStatistical(final String key) {
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
+        LayoutInflater inflater = this.getLayoutInflater();
+        View layout_update_info = inflater.inflate(R.layout.monthly_statistical_management_dialog , null);
+        dialogView = layout_update_info;
+        TongDoanhThuTrongQuy = (TextView) layout_update_info.findViewById(R.id.TongDoanhThuCuaQuy1);
+        month1 = (TextView) layout_update_info.findViewById(R.id.Month1_);
+        month2 = (TextView) layout_update_info.findViewById(R.id.Month2_);
+        month3 = (TextView) layout_update_info.findViewById(R.id.Month3_);
+        lvMonth1 = (ListView) layout_update_info.findViewById(R.id.FirstMonth1);
+        lvMonth2 = (ListView) layout_update_info.findViewById(R.id.SecondMonth1);
+        lvMonth3 = (ListView) layout_update_info.findViewById(R.id.ThirdMonth1);
 
         int year = Calendar.getInstance().get(Calendar.YEAR);
         int month = Calendar.getInstance().get(Calendar.MONTH);
         int date = Calendar.getInstance().get(Calendar.DATE);
-        PrepareSpinner(view);
+        PrepareSpinner(layout_update_info ,key);
         int index = spinner.getSelectedIndex();
         final String CURRENT_YEAR = spinner.getItems().get(index).toString();
-        GenerateDataFromCloud("Quy2", CURRENT_YEAR);
-        quy1 = (RadioButton) view.findViewById(R.id.quy1);
-        quy2 = (RadioButton) view.findViewById(R.id.quy2);
-        quy3 = (RadioButton) view.findViewById(R.id.quy3);
-        quy4 = (RadioButton) view.findViewById(R.id.quy4);
+        GenerateDataFromCloud("Quy2", CURRENT_YEAR, key);
+        quy1 = (RadioButton) layout_update_info.findViewById(R.id.quy1_);
+        quy2 = (RadioButton) layout_update_info.findViewById(R.id.quy2_);
+        quy3 = (RadioButton) layout_update_info.findViewById(R.id.quy3_);
+        quy4 = (RadioButton) layout_update_info.findViewById(R.id.quy4_);
 
         if (quy1.isChecked()) {
-            GenerateDataFromCloud("Quy1", CURRENT_YEAR);
+            GenerateDataFromCloud("Quy1", CURRENT_YEAR, key);
         }
         if (quy2.isChecked()) {
-            GenerateDataFromCloud("Quy2", CURRENT_YEAR);
+            GenerateDataFromCloud("Quy2", CURRENT_YEAR, key);
         }
         if (quy3.isChecked()) {
-            GenerateDataFromCloud("Quy3", CURRENT_YEAR);
+            GenerateDataFromCloud("Quy3", CURRENT_YEAR, key);
         }
         if (quy4.isChecked()) {
-            GenerateDataFromCloud("Quy4", CURRENT_YEAR);
+            GenerateDataFromCloud("Quy4", CURRENT_YEAR, key);
         }
 
         quy1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                GenerateDataFromCloud("Quy1", CURRENT_YEAR);
+                GenerateDataFromCloud("Quy1", CURRENT_YEAR, key);
                 quy1.setChecked(true);
             }
         });
         quy2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                GenerateDataFromCloud("Quy2", CURRENT_YEAR);
+                GenerateDataFromCloud("Quy2", CURRENT_YEAR, key);
                 quy2.setChecked(true);
             }
         });
         quy3.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                GenerateDataFromCloud("Quy3", CURRENT_YEAR);
+                GenerateDataFromCloud("Quy3", CURRENT_YEAR, key);
                 quy3.setChecked(true);
             }
         });
         quy4.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                GenerateDataFromCloud("Quy4", CURRENT_YEAR);
+                GenerateDataFromCloud("Quy4", CURRENT_YEAR, key);
                 quy4.setChecked(true);
             }
         });
+        alertDialog.setView(layout_update_info);
+        alertDialog.setNegativeButton("Đóng" , new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface , int i) {
+                dialogInterface.dismiss();
+            }
+        });
+        alertDialog.show();
+
     }
 
-    private void PrepareSpinner(View view){
-        spinner = (MaterialSpinner) view.findViewById(R.id.Yearspinner);
+    private void PrepareSpinner(View view, final String key){
+        spinner = (MaterialSpinner) view.findViewById(R.id.Yearspinner1);
         List<String> yearList = new ArrayList<>();
         yearList.add("2019");
         yearList.add("2020");
@@ -170,14 +365,78 @@ public class MonthlyStatisticalFragment extends Fragment
             yearList.add(year);
             spinner.setItems(yearList);
         }
-        spinner.setOnItemSelectedListener(this);
+        spinner.setOnItemSelectedListener(new MaterialSpinner.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(MaterialSpinner view, int position, long id, Object item) {
+                YEAR = view.getText().toString();
+                GenerateDataFromCloud("Quy1", YEAR, key);
+                if (quy1.isChecked()) {
+                    GenerateDataFromCloud("Quy1", YEAR, key);
+                }
+                if (quy2.isChecked()) {
+                    GenerateDataFromCloud("Quy2", YEAR, key);
+                }
+                if (quy3.isChecked()) {
+                    GenerateDataFromCloud("Quy3", YEAR, key);
+                }
+                if (quy4.isChecked()) {
+                    GenerateDataFromCloud("Quy4", YEAR, key);
+                }
+
+                quy1.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        GenerateDataFromCloud("Quy1", YEAR, key);
+                        quy1.setChecked(true);
+                    }
+                });
+                quy2.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        GenerateDataFromCloud("Quy2", YEAR, key);
+                        quy2.setChecked(true);
+                    }
+                });
+                quy3.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        GenerateDataFromCloud("Quy3", YEAR, key);
+                        quy3.setChecked(true);
+                    }
+                });
+                quy4.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        GenerateDataFromCloud("Quy4", YEAR, key);
+                        quy4.setChecked(true);
+                    }
+                });
+            }
+        });
+    }
+
+    private int FindMaxItem(List<String> list){
+        int tam;
+        try{
+            if (list != null){
+                tam = Integer.parseInt(list.get(0));
+                for (String item:list){
+                    if (Integer.parseInt(item) > tam)
+                        tam = Integer.parseInt(item);
+                }
+                return tam;
+            }
+        }catch (Exception ex){
+            Log.e("Error","List was null");
+        }
+        return 0;
     }
 
     private void PreparePieGraph(View view, int year, String TenQuy, int month1, int month2, int month3){
         ////////////////////// TOTAL CHART //////////////////////////////////////////////////
         ////////////////////////////////////////////////////////////////////////////////////////////
         Log.e("Data", "Year: " + year + ", tên quý: " + TenQuy + ", Tháng đầu: " + month1 + ", tháng giữa: " + month2 + ", tháng cuối: " + month3);
-        totalChart = (PieChart) view.findViewById(R.id.piechart);
+        totalChart = (PieChart) view.findViewById(R.id.piechart1);
         totalChart.setUsePercentValues(true);
         totalChart.getDescription().setEnabled(true);
         totalChart.setExtraOffsets(5, 10, 5, 5);
@@ -268,7 +527,7 @@ public class MonthlyStatisticalFragment extends Fragment
         chart.invalidate(); // refresh
     }
 
-    private void GenerateDataFromCloud(String Quy, final String YearNumberStyle){
+    private void GenerateDataFromCloud(String Quy, final String YearNumberStyle, String key){
         switch (Quy){
             case "Quy1":
                 lvMonth1.setAdapter(null);
@@ -278,7 +537,7 @@ public class MonthlyStatisticalFragment extends Fragment
                 month2.setText("Tháng 2");
                 month3.setText("Tháng 3");
                 DatabaseReference statistical_tbl = FirebaseDatabase.getInstance().getReference(Common.statistical_tbl);
-                statistical_tbl.child(Common.FixerID).child(YearNumberStyle).addListenerForSingleValueEvent(new ValueEventListener() {
+                statistical_tbl.child(key).child(YearNumberStyle).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         Iterable<DataSnapshot> snapshots = dataSnapshot.getChildren();
@@ -352,7 +611,7 @@ public class MonthlyStatisticalFragment extends Fragment
                         }
                         Log.e("total", "Tháng 1: " + total1 + ", tháng 2: " + total2 + ", tháng 3: " + total3);
                         TongDoanhThuTrongQuy.setText("$" + (total1 + total2 + total3));
-                        PreparePieGraph(view, Integer.parseInt(YearNumberStyle), "Quý 1", (int) total1, (int) total2, (int) total3);
+                        PreparePieGraph(dialogView, Integer.parseInt(YearNumberStyle), "Quý 1", (int) total1, (int) total2, (int) total3);
                     }
 
                     @Override
@@ -369,7 +628,7 @@ public class MonthlyStatisticalFragment extends Fragment
                 month2.setText("Tháng 5");
                 month3.setText("Tháng 6");
                 DatabaseReference statistical_tbl2 = FirebaseDatabase.getInstance().getReference(Common.statistical_tbl);
-                statistical_tbl2.child(Common.FixerID).child(YearNumberStyle).addListenerForSingleValueEvent(new ValueEventListener() {
+                statistical_tbl2.child(key).child(YearNumberStyle).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         Iterable<DataSnapshot> snapshots = dataSnapshot.getChildren();
@@ -442,7 +701,7 @@ public class MonthlyStatisticalFragment extends Fragment
                         }
                         Log.e("total", "Tháng 1: " + total1 + ", tháng 2: " + total2 + ", tháng 3: " + total3);
                         TongDoanhThuTrongQuy.setText("$" + (total1 + total2 + total3));
-                        PreparePieGraph(view, Integer.parseInt(YearNumberStyle), "Quý 2", (int) total1, (int) total2, (int) total3);
+                        PreparePieGraph(dialogView, Integer.parseInt(YearNumberStyle), "Quý 2", (int) total1, (int) total2, (int) total3);
                     }
 
                     @Override
@@ -459,7 +718,7 @@ public class MonthlyStatisticalFragment extends Fragment
                 month2.setText("Tháng 8");
                 month3.setText("Tháng 9");
                 DatabaseReference statistical_tbl3 = FirebaseDatabase.getInstance().getReference(Common.statistical_tbl);
-                statistical_tbl3.child(Common.FixerID).child(YearNumberStyle).addListenerForSingleValueEvent(new ValueEventListener() {
+                statistical_tbl3.child(key).child(YearNumberStyle).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         Iterable<DataSnapshot> snapshots = dataSnapshot.getChildren();
@@ -532,7 +791,7 @@ public class MonthlyStatisticalFragment extends Fragment
                         }
                         Log.e("total", "Tháng 1: " + total1 + ", tháng 2: " + total2 + ", tháng 3: " + total3);
                         TongDoanhThuTrongQuy.setText("$" + (total1 + total2 + total3));
-                        PreparePieGraph(view, Integer.parseInt(YearNumberStyle), "Quý 3", (int) total1, (int) total2, (int) total3);
+                        PreparePieGraph(dialogView, Integer.parseInt(YearNumberStyle), "Quý 3", (int) total1, (int) total2, (int) total3);
                     }
 
                     @Override
@@ -549,7 +808,7 @@ public class MonthlyStatisticalFragment extends Fragment
                 month2.setText("Tháng 11");
                 month3.setText("Tháng 12");
                 DatabaseReference statistical_tbl4 = FirebaseDatabase.getInstance().getReference(Common.statistical_tbl);
-                statistical_tbl4.child(Common.FixerID).child(YearNumberStyle).addListenerForSingleValueEvent(new ValueEventListener() {
+                statistical_tbl4.child(key).child(YearNumberStyle).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         Iterable<DataSnapshot> snapshots = dataSnapshot.getChildren();
@@ -623,7 +882,7 @@ public class MonthlyStatisticalFragment extends Fragment
                         }
                         Log.e("total", "Tháng 1: " + total1 + ", tháng 2: " + total2 + ", tháng 3: " + total3);
                         TongDoanhThuTrongQuy.setText("$" + (total1 + total2 + total3));
-                        PreparePieGraph(view, Integer.parseInt(YearNumberStyle), "Quý 4", (int) total1, (int) total2, (int) total3);
+                        PreparePieGraph(dialogView, Integer.parseInt(YearNumberStyle), "Quý 4", (int) total1, (int) total2, (int) total3);
                     }
 
                     @Override
@@ -635,78 +894,15 @@ public class MonthlyStatisticalFragment extends Fragment
         }
     }
 
-    private int FindMaxItem(List<String> list){
-        int tam;
-        try{
-            if (list != null){
-                tam = Integer.parseInt(list.get(0));
-                for (String item:list){
-                    if (Integer.parseInt(item) > tam)
-                        tam = Integer.parseInt(item);
-                }
-                return tam;
-            }
-        }catch (Exception ex){
-            Log.e("Error","List was null");
-        }
-        return 0;
-    }
-
-    @Override
-    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        return false;
-    }
-
-    @Override
-    public void onClick(View v) {
-
-    }
-
-    @Override
-    public void onItemSelected(MaterialSpinner view, int position, long id, Object item) {
-        YEAR = view.getText().toString();
-        GenerateDataFromCloud("Quy1", YEAR);
-        if (quy1.isChecked()) {
-            GenerateDataFromCloud("Quy1", YEAR);
-        }
-        if (quy2.isChecked()) {
-            GenerateDataFromCloud("Quy2", YEAR);
-        }
-        if (quy3.isChecked()) {
-            GenerateDataFromCloud("Quy3", YEAR);
-        }
-        if (quy4.isChecked()) {
-            GenerateDataFromCloud("Quy4", YEAR);
-        }
-
-        quy1.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                GenerateDataFromCloud("Quy1", YEAR);
-                quy1.setChecked(true);
-            }
-        });
-        quy2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                GenerateDataFromCloud("Quy2", YEAR);
-                quy2.setChecked(true);
-            }
-        });
-        quy3.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                GenerateDataFromCloud("Quy3", YEAR);
-                quy3.setChecked(true);
-            }
-        });
-        quy4.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                GenerateDataFromCloud("Quy4", YEAR);
-                quy4.setChecked(true);
-            }
-        });
+    private SpannableString generateCenterSpannableText() {
+        SpannableString s = new SpannableString("From VUANH: chart source code developed by Philipp Jahoda");
+        s.setSpan(new RelativeSizeSpan(1.5f), 0, 14, 0);
+        s.setSpan(new StyleSpan(Typeface.NORMAL), 14, s.length() - 15, 0);
+        s.setSpan(new ForegroundColorSpan(Color.GRAY), 14, s.length() - 15, 0);
+        s.setSpan(new RelativeSizeSpan(.65f), 14, s.length() - 15, 0);
+        s.setSpan(new StyleSpan(Typeface.ITALIC), s.length() - 14, s.length(), 0);
+        s.setSpan(new ForegroundColorSpan(ColorTemplate.getHoloBlue()), s.length() - 14, s.length(), 0);
+        return s;
     }
 
     @Override
@@ -717,16 +913,5 @@ public class MonthlyStatisticalFragment extends Fragment
     @Override
     public void onNothingSelected() {
 
-    }
-
-    private SpannableString generateCenterSpannableText() {
-        SpannableString s = new SpannableString("From VUANH: chart source code developed by Philipp Jahoda");
-        s.setSpan(new RelativeSizeSpan(1.5f), 0, 14, 0);
-        s.setSpan(new StyleSpan(Typeface.NORMAL), 14, s.length() - 15, 0);
-        s.setSpan(new ForegroundColorSpan(Color.GRAY), 14, s.length() - 15, 0);
-        s.setSpan(new RelativeSizeSpan(.65f), 14, s.length() - 15, 0);
-        s.setSpan(new StyleSpan(Typeface.ITALIC), s.length() - 14, s.length(), 0);
-        s.setSpan(new ForegroundColorSpan(ColorTemplate.getHoloBlue()), s.length() - 14, s.length(), 0);
-        return s;
     }
 }

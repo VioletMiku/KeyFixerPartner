@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/WhiteBackground"
+    android:padding="5dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <com.jaredrummler.materialspinner.MaterialSpinner
+        android:id="@+id/Yearspinner1"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_alignParentTop="true"/>
+
+    <RadioGroup
+        android:layout_below="@id/Yearspinner1"
+        android:id="@+id/GroupQuy1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <RadioButton
+            android:id="@+id/quy1_"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Quý 1"
+            android:layout_marginLeft="15dp"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@color/baseReleaseColor"/>
+
+        <RadioButton
+            android:id="@+id/quy2_"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="Quý 2"
+            android:layout_marginLeft="10dp"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@color/baseReleaseColor"/>
+
+        <RadioButton
+            android:id="@+id/quy3_"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Quý 3"
+            android:layout_marginLeft="10dp"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@color/baseReleaseColor"/>
+
+        <RadioButton
+            android:id="@+id/quy4_"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Quý 4"
+            android:layout_marginLeft="10dp"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@color/baseReleaseColor"/>
+    </RadioGroup>
+
+    <ScrollView
+        android:layout_below="@+id/GroupQuy1"
+        android:paddingTop="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:paddingBottom="20dp"
+            android:layout_height="wrap_content">
+
+            <RelativeLayout
+                android:layout_margin="20dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/TongDoanhThuTrongQuy1">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/label1"
+                    android:text="Tổng doanh thu trong quý"
+                    android:textStyle="bold"
+                    android:textSize="20sp"
+                    android:layout_marginLeft="30dp"
+                    android:textColor="@color/baseReleaseColor"/>
+
+                <TextView
+                    android:layout_below="@+id/label1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/TongDoanhThuCuaQuy1"
+                    android:text="$5000"
+                    android:layout_marginTop="20dp"
+                    android:textColor="@android:color/holo_green_dark"
+                    android:textSize="25sp"
+                    android:textStyle="bold"
+                    android:textAlignment="center" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_below="@+id/TongDoanhThuTrongQuy1"
+                android:id="@+id/piechartView1"
+                android:background="@drawable/corner_and_shadow"
+                android:layout_margin="10dp"
+                android:padding="20dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <com.github.mikephil.charting.charts.PieChart
+                    android:id="@+id/piechart1"
+                    android:layout_centerHorizontal="true"
+                    android:layout_width="300dp"
+                    android:layout_height="350dp"
+                    android:layout_marginTop="30dp"
+                    android:outlineAmbientShadowColor="@color/colorPrimary"
+                    android:outlineSpotShadowColor="@color/ballReleaseColor"/>
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_below="@id/piechartView1"
+                android:padding="5dp"
+                android:layout_margin="10dp"
+                android:background="@drawable/corner_and_shadow"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <TextView
+                    android:id="@+id/titlebelowPieChart1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Phí thu nhập cụ thể từng tháng"
+                    android:textColor="@color/baseReleaseColor"
+                    android:textStyle="bold"
+                    android:textSize="18sp"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginLeft="20dp"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/Month1_"
+                    android:text="Tháng 13"
+                    android:textAlignment="center"
+                    android:textColor="@color/baseReleaseColor"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:layout_below="@+id/titlebelowPieChart1"
+                    android:layout_marginTop="15dp"/>
+
+                <ListView
+                    android:id="@+id/FirstMonth1"
+                    android:dividerHeight="10dp"
+                    android:layout_margin="10dp"
+                    android:layout_below="@+id/Month1_"
+                    android:nestedScrollingEnabled="true"
+                    android:background="@color/WhiteBackground"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/Month2_"
+                    android:text="Tháng 13"
+                    android:textAlignment="center"
+                    android:textColor="@color/baseReleaseColor"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:layout_below="@+id/FirstMonth1"
+                    android:layout_marginTop="15dp"/>
+
+                <ListView
+                    android:id="@+id/SecondMonth1"
+                    android:dividerHeight="10dp"
+                    android:layout_margin="10dp"
+                    android:layout_below="@+id/Month2_"
+                    android:nestedScrollingEnabled="true"
+                    android:background="@color/WhiteBackground"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/Month3_"
+                    android:text="Tháng 13"
+                    android:textAlignment="center"
+                    android:textColor="@color/baseReleaseColor"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:layout_below="@+id/SecondMonth1"
+                    android:layout_marginTop="15dp"/>
+
+                <ListView
+                    android:id="@+id/ThirdMonth1"
+                    android:dividerHeight="10dp"
+                    android:layout_margin="10dp"
+                    android:layout_below="@+id/Month3_"
+                    android:nestedScrollingEnabled="true"
+                    android:background="@color/WhiteBackground"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"/>
+            </RelativeLayout>
+        </RelativeLayout>
+    </ScrollView>
+</RelativeLayout>
