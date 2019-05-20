@@ -9,7 +9,6 @@ import android.location.Location;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
@@ -26,7 +25,6 @@ import com.firebase.geofire.GeoQueryEventListener;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
@@ -81,7 +79,6 @@ public class FixerTracking extends FragmentActivity implements OnMapReadyCallbac
     private GoogleMap mMap;
     IGoogleAPI mService;
     IFCMService ifcmService;
-
     GeoFire geofire;
     String customerid;
     Button btnstartfixing, btnCancel;
@@ -349,11 +346,9 @@ public class FixerTracking extends FragmentActivity implements OnMapReadyCallbac
             case R.id.btnstart:
                 if (btnstartfixing.getText().equals("B Ắ T   Đ Ầ U   S Ử A")){
                     fixLocation = Common.mLastLocation;
-                    RemoveLocation();
                     btnstartfixing.setText("S Ử A   H O À N   T Ấ T");
                 } else if (btnstartfixing.getText().equals("S Ử A   H O À N   T Ấ T")){
                     calculateCashFee(fixLocation, Common.mLastLocation);
-                    RemoveFixRequest();
                 }
                 break;
             case R.id.btnCancel:
@@ -363,22 +358,6 @@ public class FixerTracking extends FragmentActivity implements OnMapReadyCallbac
                 Intent home = new Intent(FixerTracking.this, FixerHome.class);
                 startActivity(home);
                 break;
-        }
-    }
-
-    private void RemoveFixRequest() {
-        DatabaseReference fixRequest_tbl = FirebaseDatabase.getInstance().getReference(Common.fix_request_tbl);
-        fixRequest_tbl.child(Common.FixerID).removeValue();
-    }
-
-    private void RemoveLocation(){
-        try {
-            FirebaseDatabase.getInstance().goOffline();//set disconnected when the fixer leave
-            Common.fusedLocationProviderClient.removeLocationUpdates(Common.locationCallback);
-            Common.mCurrent.remove();
-            mMap.clear();
-        } catch (NullPointerException ex) {
-            Toast.makeText(FixerTracking.this , "Vui lòng bật GPS rồi thử lại !" , Toast.LENGTH_SHORT).show();
         }
     }
 

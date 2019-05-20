@@ -6,9 +6,6 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
@@ -31,9 +28,6 @@ import java.util.Map;
 public class Common {
 
     public static DatabaseReference onlineref, currentUserref;
-    public static FusedLocationProviderClient fusedLocationProviderClient;
-    public static LocationCallback locationCallback;
-    public static Marker mCurrent;
     public static boolean isAdmin;
     public static boolean isActivated;
     public static String used_service = "";

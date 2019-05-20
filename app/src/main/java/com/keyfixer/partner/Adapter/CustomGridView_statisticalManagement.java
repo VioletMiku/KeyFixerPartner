@@ -1,7 +1,6 @@
 package com.keyfixer.partner.Adapter;
 
 import android.content.Context;
-import android.media.Image;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -12,10 +11,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import com.keyfixer.partner.Model.Fixer;
-import com.keyfixer.partner.Model.Statistical;
 import com.keyfixer.partner.R;
 import com.squareup.picasso.Picasso;
 

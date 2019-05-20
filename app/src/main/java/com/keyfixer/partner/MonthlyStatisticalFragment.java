@@ -81,7 +81,6 @@ public class MonthlyStatisticalFragment extends Fragment
     private Typeface tf;
     TextView month1, month2, month3, TongDoanhThuTrongQuy;
     ListView lvMonth1, lvMonth2, lvMonth3;
-    String YEAR;
 
     @Nullable
     @Override
@@ -664,49 +663,7 @@ public class MonthlyStatisticalFragment extends Fragment
 
     @Override
     public void onItemSelected(MaterialSpinner view, int position, long id, Object item) {
-        YEAR = view.getText().toString();
-        GenerateDataFromCloud("Quy1", YEAR);
-        if (quy1.isChecked()) {
-            GenerateDataFromCloud("Quy1", YEAR);
-        }
-        if (quy2.isChecked()) {
-            GenerateDataFromCloud("Quy2", YEAR);
-        }
-        if (quy3.isChecked()) {
-            GenerateDataFromCloud("Quy3", YEAR);
-        }
-        if (quy4.isChecked()) {
-            GenerateDataFromCloud("Quy4", YEAR);
-        }
 
-        quy1.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                GenerateDataFromCloud("Quy1", YEAR);
-                quy1.setChecked(true);
-            }
-        });
-        quy2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                GenerateDataFromCloud("Quy2", YEAR);
-                quy2.setChecked(true);
-            }
-        });
-        quy3.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                GenerateDataFromCloud("Quy3", YEAR);
-                quy3.setChecked(true);
-            }
-        });
-        quy4.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                GenerateDataFromCloud("Quy4", YEAR);
-                quy4.setChecked(true);
-            }
-        });
     }
 
     @Override

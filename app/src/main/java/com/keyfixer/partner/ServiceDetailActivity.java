@@ -210,7 +210,7 @@ public class ServiceDetailActivity extends FragmentActivity implements OnMapRead
                 item.setCustomerName(customerInf.getStrName());
                 item.setCustomerPhone(customerInf.getStrPhone());
                 item.setServiceFee(txtServiceFee.getText().toString());
-
+                RemoveRequest();
                 currentStatistical.child(Common.FixerID).child(currentYear).child(currentMonth).child(currentMonthDate)
                                     .child(currentMinute).setValue(item).addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
@@ -225,5 +225,10 @@ public class ServiceDetailActivity extends FragmentActivity implements OnMapRead
 
             }
         });
+    }
+
+    private void RemoveRequest(){
+        DatabaseReference request_tbl = FirebaseDatabase.getInstance().getReference(Common.fix_request_tbl);
+        request_tbl.child(Common.FixerID).removeValue();
     }
 }
