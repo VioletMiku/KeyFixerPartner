@@ -372,6 +372,7 @@ public class FixerTracking extends FragmentActivity implements OnMapReadyCallbac
             @Override
             public void onResponse(Call<FCMResponse> call, Response<FCMResponse> response) {
                 if (response.body().success == 1){
+                    Common.RemoveRequest();
                     Toast.makeText(FixerTracking.this, "Đã hủy!", Toast.LENGTH_SHORT).show();
                     finish();
                 }

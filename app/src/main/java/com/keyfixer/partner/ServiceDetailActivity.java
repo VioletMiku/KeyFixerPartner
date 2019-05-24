@@ -41,6 +41,8 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.keyfixer.partner.Common.Common.RemoveRequest;
+
 
 public class ServiceDetailActivity extends FragmentActivity implements OnMapReadyCallback, View.OnClickListener {
 
@@ -225,10 +227,5 @@ public class ServiceDetailActivity extends FragmentActivity implements OnMapRead
 
             }
         });
-    }
-
-    private void RemoveRequest(){
-        DatabaseReference request_tbl = FirebaseDatabase.getInstance().getReference(Common.fix_request_tbl);
-        request_tbl.child(Common.FixerID).removeValue();
     }
 }

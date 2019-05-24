@@ -332,13 +332,7 @@ public class FixerHome extends AppCompatActivity
                 buildLocationRequest();
                 if (ActivityCompat.checkSelfPermission(FixerHome.this , Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                         && ActivityCompat.checkSelfPermission(FixerHome.this , Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    // TODO: Consider calling
-                    //    ActivityCompat#requestPermissions
-                    // here to request the missing permissions, and then overriding
-                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                    //                                          int[] grantResults)
-                    // to handle the case where the user grants the permission. See the documentation
-                    // for ActivityCompat#requestPermissions for more details.
+
                     return;
                 }
                 fusedLocationProviderClient.requestLocationUpdates(mLocationRequest , locationCallback , Looper.myLooper());
@@ -379,34 +373,7 @@ public class FixerHome extends AppCompatActivity
                 }
             }
         });
-        /*
-        * location_switch.setOnCheckedChangeListener(new MaterialAnimatedSwitch.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(boolean isOnline) {
-                if (isOnline){
-                    FirebaseDatabase.getInstance().goOnline();//set connected when the fixer comeback
-                    buildLocationCallback();
-                    buildLocationRequest();
-                    fusedLocationProviderClient.requestLocationUpdates(mLocationRequest, locationCallback, Looper.myLooper());
-                    displayLocation();
-                    Snackbar.make(mapFragment.getView(),"Bạn đang online",Snackbar.LENGTH_SHORT).show();
-                }
-                else{
-                    try{
-                        FirebaseDatabase.getInstance().goOffline();//set disconnected when the fixer leave
-                        fusedLocationProviderClient.removeLocationUpdates(locationCallback);
-                        mCurrent.remove();
-                        mMap.clear();
-                        if (handler != null)
-                            handler.removeCallbacks(drawPathRunnable);
-                        Snackbar.make(mapFragment.getView(),"Bạn đang offline",Snackbar.LENGTH_SHORT).show();
-                    }catch(NullPointerException ex){
-                        Toast.makeText(FixerHome.this, "Vui lòng bật GPS rồi thử lại !", Toast.LENGTH_SHORT).show();
-                    }
-                }
-            }
-        });
-        * */
+
         setupLocation();
 
         mService = Common.getGoogleAPI();
@@ -745,10 +712,8 @@ public class FixerHome extends AppCompatActivity
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-
         return super.onOptionsItemSelected(item);
     }
-
 
     private void ActiveSuccess(){
         SweetAlertDialog dialog = new SweetAlertDialog(this, SweetAlertDialog.SUCCESS_TYPE);
