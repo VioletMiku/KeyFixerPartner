@@ -146,7 +146,7 @@ public class FixerTracking extends FragmentActivity implements OnMapReadyCallbac
             @Override
             public void onKeyEntered(String key , GeoLocation location) {
                 btnstartfixing.setEnabled(true);
-                sendArrivedNotification(customerid);
+                //sendArrivedNotification(customerid);
             }
 
             @Override

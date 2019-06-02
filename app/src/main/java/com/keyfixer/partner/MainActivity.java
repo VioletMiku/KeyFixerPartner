@@ -147,15 +147,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         dialog.show();
     }
 
-    private void createAccountFeeOverDialog(){
-        SweetAlertDialog dialog = new SweetAlertDialog(this, SweetAlertDialog.WARNING_TYPE);
-        dialog.getProgressHelper().setBarColor(Color.parseColor("#A5DC86"));
-        dialog.setTitle("Tài khoản hết tiền");
-        dialog.setTitleText("Tài khoản của bạn vừa hết tiền. Vui lòng về trung tâm để nạp tiền!");
-        dialog.setCancelable(true);
-        dialog.show();
-    }
-
     private void printkeyhash() {
         try{
             PackageInfo info = getPackageManager().getPackageInfo("com.keyfixer.partner", PackageManager.GET_SIGNATURES);
@@ -188,14 +179,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             fixer_tbl.child(account.getId()).updateChildren(updateinfo).addOnCompleteListener(new OnCompleteListener<Void>() {
                                 @Override
                                 public void onComplete(@NonNull Task<Void> task) {
-
+                                    Common.isOver = true;
                                 }
                             });
                         } else{
                             fixer_tbl.child(account.getId()).updateChildren(updateinfo2).addOnCompleteListener(new OnCompleteListener<Void>() {
                                 @Override
                                 public void onComplete(@NonNull Task<Void> task) {
-                                    createAccountFeeOverDialog();
+
                                 }
                             });
                         }

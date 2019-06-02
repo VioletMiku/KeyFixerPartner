@@ -2,8 +2,7 @@
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:background="@drawable/specific_statistical_corner">
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <RelativeLayout
         app:layout_constraintTop_toTopOf="parent"
@@ -228,6 +227,27 @@
                 android:layout_marginLeft="20dp"
                 android:text="..."/>
         </LinearLayout>
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/btnCancel"
+            android:background="@color/colorAccent"
+            android:textColor="#FFFFFF"
+            android:textAlignment="center"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:text="Đ Ó N G"
+            android:layout_alignParentBottom="true"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:text="Thông tin chi tiết hóa đơn"
+            android:textColor="@color/baseReleaseColor"
+            android:layout_alignParentTop="true"/>
     </RelativeLayout>
 
     <TextView

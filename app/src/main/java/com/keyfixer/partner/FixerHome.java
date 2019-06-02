@@ -245,6 +245,9 @@ public class FixerHome extends AppCompatActivity
             Picasso.with(this).load(Common.currentFixer.getAvatarUrl()).into(imageAvatar);
         }
 
+        if (Common.isOver)
+            createAccountFeeOverDialog();
+
         //mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -471,7 +474,7 @@ public class FixerHome extends AppCompatActivity
 
                         carMarker = mMap.addMarker(new MarkerOptions().position(currentPosition)
                                 .flat(true)
-                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.car)));
+                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.icons8_key_2_24)));
 
                         handler = new Handler();
                         index = -1;
@@ -1330,7 +1333,7 @@ public class FixerHome extends AppCompatActivity
                     @Override
                     public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
                         double progress = (100.0 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
-                        mDialog.setMessage("Đã tải được " + progress + "%");
+                        mDialog.setMessage("Đã tải được " + (int) progress + "%");
                     }
                 }).addOnFailureListener(new OnFailureListener() {
                     @Override
@@ -1421,6 +1424,15 @@ public class FixerHome extends AppCompatActivity
             return (float) ((90 - Math.toDegrees(Math.atan(lng / lat))) + 270);
         }
         return -1;
+    }
+
+    private void createAccountFeeOverDialog(){
+        SweetAlertDialog dialog = new SweetAlertDialog(this, SweetAlertDialog.WARNING_TYPE);
+        dialog.getProgressHelper().setBarColor(Color.parseColor("#A5DC86"));
+        dialog.setTitle("Tài khoản hết tiền");
+        dialog.setTitleText("Tài khoản của bạn vừa hết tiền. Vui lòng về trung tâm để nạp tiền!");
+        dialog.setCancelable(true);
+        dialog.show();
     }
 
 }

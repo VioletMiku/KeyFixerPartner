@@ -30,6 +30,7 @@ public class Common {
     public static DatabaseReference onlineref, currentUserref;
     public static boolean isAdmin;
     public static boolean isActivated;
+    public static boolean isOver;
     public static String used_service = "";
     public static String used_service1 = "";
     public static String used_service2 = "";

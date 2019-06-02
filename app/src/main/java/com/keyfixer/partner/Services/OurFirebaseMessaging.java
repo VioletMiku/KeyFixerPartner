@@ -24,6 +24,7 @@ public class OurFirebaseMessaging extends FirebaseMessagingService {
         //so we're going to convert message to Latng
         if (remoteMessage.getData() != null) {
             Map<String, String> data = remoteMessage.getData();
+            Log.e("data received", "" + data.toString());
             Common.CustomerID = data.get("customerid");
             String customerRequest = data.get("customer");
             if (customerRequest.equals("Cancel")){
