@@ -41,6 +41,8 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.keyfixer.partner.Common.Common.RemoveRequest;
+
 
 public class ServiceDetailActivity extends FragmentActivity implements OnMapReadyCallback, View.OnClickListener {
 
@@ -210,7 +212,7 @@ public class ServiceDetailActivity extends FragmentActivity implements OnMapRead
                 item.setCustomerName(customerInf.getStrName());
                 item.setCustomerPhone(customerInf.getStrPhone());
                 item.setServiceFee(txtServiceFee.getText().toString());
-
+                RemoveRequest();
                 currentStatistical.child(Common.FixerID).child(currentYear).child(currentMonth).child(currentMonthDate)
                                     .child(currentMinute).setValue(item).addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override

@@ -21,6 +21,7 @@
         android:name="com.example.app.permission.MAPS_RECEIVE"
         android:protectionLevel="signature" /> <!-- Permission to receive Google Maps -->
     <uses-permission android:name="com.example.app.permission.MAPS_RECEIVE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
         android:allowBackup="true"
@@ -33,11 +34,11 @@
             android:name=".StatisticalManagementActivity"
             android:windowSoftInputMode="stateHidden"
             android:label="@string/title_activity_statistical_management"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar"/>
         <activity
             android:name=".Main2Activity"
             android:label="@string/title_activity_main2"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme.NoActionBar"></activity>
         <activity
             android:name=".StatisticalActivity"
             android:label="@string/title_activity_statistical"

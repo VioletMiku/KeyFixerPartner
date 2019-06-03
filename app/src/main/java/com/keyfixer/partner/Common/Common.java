@@ -6,9 +6,6 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
@@ -31,16 +28,13 @@ import java.util.Map;
 public class Common {
 
     public static DatabaseReference onlineref, currentUserref;
-    public static FusedLocationProviderClient fusedLocationProviderClient;
-    public static LocationCallback locationCallback;
-    public static Marker mCurrent;
     public static boolean isAdmin;
     public static boolean isActivated;
+    public static boolean isOver;
     public static String used_service = "";
     public static String used_service1 = "";
     public static String used_service2 = "";
     public static String service_chose;
-    public static boolean isFreeForDistanceFee = true;
     public static final String fixer_tbl = "Fixers";
     public static final String fixer_inf_tbl = "Users";
     public static final String customer_tbl = "Customers";
@@ -48,13 +42,10 @@ public class Common {
     public static final String rate_detail_tbl = "RateDetails";
     public static final String token_tbl = "Tokens";
     public static final int PICK_IMAGE_REQUEST = 9999;
-    public static final String user_field = "user";
-    public static final String pwd_field = "password";
     public static final String statistical_tbl = "StatisticalActivity";
     public static double house_lock_service = 30000;
     public static double car_lock_service = 25000;
     public static double motorbyke_lock_service = 20000;
-    private static double distance_rate = 1.75;
     public static String FixerID = "";
     public static String CustomerID = "";
 
@@ -80,7 +71,7 @@ public class Common {
                 rateDetailRef.child(fixerID).addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
-                        double averageStars = 0.0;
+                        double averageStars = 2.0;
                         int count = 0;
                         for (DataSnapshot postsnapshot : dataSnapshot.getChildren()){
                             Rate rate = postsnapshot.getValue(Rate.class);
@@ -140,5 +131,10 @@ public class Common {
 
     public static IFCMService getFCMService(){
         return FCMClient.getClient(fcmUrl).create(IFCMService.class);
+    }
+
+    public static void RemoveRequest(){
+        DatabaseReference request_tbl = FirebaseDatabase.getInstance().getReference(Common.fix_request_tbl);
+        request_tbl.child(Common.FixerID).removeValue();
     }
 }

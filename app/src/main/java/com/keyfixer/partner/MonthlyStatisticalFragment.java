@@ -1,6 +1,8 @@
 package com.keyfixer.partner;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -18,12 +20,18 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.TextView;
 
+import com.facebook.accountkit.Account;
+import com.facebook.accountkit.AccountKit;
+import com.facebook.accountkit.AccountKitCallback;
+import com.facebook.accountkit.AccountKitError;
 import com.facebook.accountkit.ui.LoginFlowState;
 import com.github.mikephil.charting.animation.Easing;
 import com.github.mikephil.charting.charts.BarChart;
@@ -49,6 +57,8 @@ import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
 import com.github.mikephil.charting.interfaces.datasets.IDataSet;
 import com.github.mikephil.charting.utils.ColorTemplate;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -59,12 +69,17 @@ import com.keyfixer.partner.Adapter.CustomListViewAdapter_forEachDayStatistical;
 import com.keyfixer.partner.Adapter.CustomListView_Statistical;
 import com.keyfixer.partner.Common.Common;
 import com.keyfixer.partner.Model.DailyStatistical;
+import com.keyfixer.partner.Model.Fixer;
 import com.keyfixer.partner.Model.Statistical;
 
 import java.time.Month;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import dmax.dialog.SpotsDialog;
 
 public class MonthlyStatisticalFragment extends Fragment
         implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener, MaterialSpinner.OnItemSelectedListener, OnChartValueSelectedListener {
@@ -81,7 +96,6 @@ public class MonthlyStatisticalFragment extends Fragment
     private Typeface tf;
     TextView month1, month2, month3, TongDoanhThuTrongQuy;
     ListView lvMonth1, lvMonth2, lvMonth3;
-    String YEAR;
 
     @Nullable
     @Override
@@ -285,9 +299,9 @@ public class MonthlyStatisticalFragment extends Fragment
                         double total1 = 0;
                         double total2 = 0;
                         double total3 = 0;
-                        List<DailyStatistical> statisticals1 = new ArrayList<>();
-                        List<DailyStatistical> statisticals2 = new ArrayList<>();
-                        List<DailyStatistical> statisticals3 = new ArrayList<>();
+                        final List<DailyStatistical> statisticals1 = new ArrayList<>();
+                        final List<DailyStatistical> statisticals2 = new ArrayList<>();
+                        final List<DailyStatistical> statisticals3 = new ArrayList<>();
                         for (DataSnapshot item:snapshots){
                             Log.e("sample data", "" + item.toString());
                             String month = (Integer.parseInt(item.getKey()) + 1) + "";
@@ -300,6 +314,14 @@ public class MonthlyStatisticalFragment extends Fragment
                                     for (DataSnapshot item2:snapshots2){
                                         Log.e("sample data", "" + item2.toString());
                                         Statistical model = item2.getValue(Statistical.class);
+                                        dailyStatistical.setFinishedTime("Thứ " + model.getCompletedWeekDate() + ", ngày " +
+                                                model.getCompletedMonthDate() + ", " + model.getCompletedHour() + ": " + model.getCompletedMinutes());
+                                        dailyStatistical.setFixedLocation(model.getFixLocation());
+                                        dailyStatistical.setServiceFee(model.getServiceFee());
+                                        dailyStatistical.setServiceName(model.getServiceName());
+                                        dailyStatistical.setServiceVAT(model.getVatFee());
+                                        dailyStatistical.setCustomerName(model.getCustomerName());
+                                        dailyStatistical.setCustomerPhone(model.getCustomerPhone());
                                         dailyStatistical.setDate("Thứ " + model.getCompletedWeekDate() + ", ngày " +
                                                 model.getCompletedMonthDate());
                                         dailyStatistical.setFee(model.getTotalFee());
@@ -317,6 +339,14 @@ public class MonthlyStatisticalFragment extends Fragment
                                     for (DataSnapshot item2:snapshots2){
                                         Log.e("sample data", "" + item2.toString());
                                         Statistical model = item2.getValue(Statistical.class);
+                                        dailyStatistical.setFinishedTime("Thứ " + model.getCompletedWeekDate() + ", ngày " +
+                                                model.getCompletedMonthDate() + ", " + model.getCompletedHour() + ": " + model.getCompletedMinutes());
+                                        dailyStatistical.setFixedLocation(model.getFixLocation());
+                                        dailyStatistical.setServiceFee(model.getServiceFee());
+                                        dailyStatistical.setServiceName(model.getServiceName());
+                                        dailyStatistical.setServiceVAT(model.getVatFee());
+                                        dailyStatistical.setCustomerName(model.getCustomerName());
+                                        dailyStatistical.setCustomerPhone(model.getCustomerPhone());
                                         dailyStatistical.setDate("Thứ " + model.getCompletedWeekDate() + ", ngày " +
                                                 model.getCompletedMonthDate());
                                         dailyStatistical.setFee(model.getTotalFee());
@@ -334,6 +364,14 @@ public class MonthlyStatisticalFragment extends Fragment
                                     for (DataSnapshot item2:snapshots2){
                                         Log.e("sample data", "" + item2.toString());
                                         Statistical model = item2.getValue(Statistical.class);
+                                        dailyStatistical.setFinishedTime("Thứ " + model.getCompletedWeekDate() + ", ngày " +
+                                                model.getCompletedMonthDate() + ", " + model.getCompletedHour() + ": " + model.getCompletedMinutes());
+                                        dailyStatistical.setFixedLocation(model.getFixLocation());
+                                        dailyStatistical.setServiceFee(model.getServiceFee());
+                                        dailyStatistical.setServiceName(model.getServiceName());
+                                        dailyStatistical.setServiceVAT(model.getVatFee());
+                                        dailyStatistical.setCustomerName(model.getCustomerName());
+                                        dailyStatistical.setCustomerPhone(model.getCustomerPhone());
                                         dailyStatistical.setDate("Thứ " + model.getCompletedWeekDate() + ", ngày " +
                                                 model.getCompletedMonthDate());
                                         dailyStatistical.setFee(model.getTotalFee());
@@ -344,10 +382,31 @@ public class MonthlyStatisticalFragment extends Fragment
                             }
                             CustomListViewAdapter_forEachDayStatistical adapter = new CustomListViewAdapter_forEachDayStatistical(context, R.layout.customlistview_statistical_for_eachday, statisticals1);
                             lvMonth1.setAdapter(adapter);
+                            lvMonth1.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                                @Override
+                                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                                    DailyStatistical currentItem = statisticals1.get(position);
+                                    createStatisticalDetailDialog(currentItem);
+                                }
+                            });
                             CustomListViewAdapter_forEachDayStatistical adapter1 = new CustomListViewAdapter_forEachDayStatistical(context, R.layout.customlistview_statistical_for_eachday, statisticals2);
                             lvMonth2.setAdapter(adapter1);
+                            lvMonth2.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                                @Override
+                                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                                    DailyStatistical currentItem = statisticals2.get(position);
+                                    createStatisticalDetailDialog(currentItem);
+                                }
+                            });
                             CustomListViewAdapter_forEachDayStatistical adapter2 = new CustomListViewAdapter_forEachDayStatistical(context, R.layout.customlistview_statistical_for_eachday, statisticals3);
                             lvMonth3.setAdapter(adapter2);
+                            lvMonth3.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                                @Override
+                                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                                    DailyStatistical currentItem = statisticals3.get(position);
+                                    createStatisticalDetailDialog(currentItem);
+                                }
+                            });
 
                         }
                         Log.e("total", "Tháng 1: " + total1 + ", tháng 2: " + total2 + ", tháng 3: " + total3);
@@ -379,9 +438,9 @@ public class MonthlyStatisticalFragment extends Fragment
                         for (DataSnapshot item:snapshots){
                             Log.e("sample data", "" + item.toString());
                             String month = (Integer.parseInt(item.getKey()) + 1) + "";
-                            List<DailyStatistical> statisticals1 = new ArrayList<>();
-                            List<DailyStatistical> statisticals2 = new ArrayList<>();
-                            List<DailyStatistical> statisticals3 = new ArrayList<>();
+                            final List<DailyStatistical> statisticals1 = new ArrayList<>();
+                            final List<DailyStatistical> statisticals2 = new ArrayList<>();
+                            final List<DailyStatistical> statisticals3 = new ArrayList<>();
                             if (month.equals("4")){
                                 Iterable<DataSnapshot> snapshots1 = item.getChildren();
                                 for (DataSnapshot item1:snapshots1){
@@ -391,6 +450,14 @@ public class MonthlyStatisticalFragment extends Fragment
                                     for (DataSnapshot item2:snapshots2){
                                         Log.e("sample data", "" + item2.toString());
                                         Statistical model = item2.getValue(Statistical.class);
+                                        dailyStatistical.setFinishedTime("Thứ " + model.getCompletedWeekDate() + ", ngày " +
+                                                model.getCompletedMonthDate() + ", " + model.getCompletedHour() + ": " + model.getCompletedMinutes());
+                                        dailyStatistical.setFixedLocation(model.getFixLocation());
+                                        dailyStatistical.setServiceFee(model.getServiceFee());
+                                        dailyStatistical.setServiceName(model.getServiceName());
+                                        dailyStatistical.setServiceVAT(model.getVatFee());
+                                        dailyStatistical.setCustomerName(model.getCustomerName());
+                                        dailyStatistical.setCustomerPhone(model.getCustomerPhone());
                                         dailyStatistical.setDate("Thứ " + model.getCompletedWeekDate() + ", ngày " +
                                                 model.getCompletedMonthDate());
                                         dailyStatistical.setFee(model.getTotalFee());
@@ -408,10 +475,17 @@ public class MonthlyStatisticalFragment extends Fragment
                                     for (DataSnapshot item2:snapshots2){
                                         Log.e("sample data", "" + item2.toString());
                                         Statistical model = item2.getValue(Statistical.class);
+                                        dailyStatistical.setFinishedTime("Thứ " + model.getCompletedWeekDate() + ", ngày " +
+                                                model.getCompletedMonthDate() + ", " + model.getCompletedHour() + ": " + model.getCompletedMinutes());
+                                        dailyStatistical.setFixedLocation(model.getFixLocation());
+                                        dailyStatistical.setServiceFee(model.getServiceFee());
+                                        dailyStatistical.setServiceName(model.getServiceName());
+                                        dailyStatistical.setServiceVAT(model.getVatFee());
+                                        dailyStatistical.setCustomerName(model.getCustomerName());
+                                        dailyStatistical.setCustomerPhone(model.getCustomerPhone());
                                         dailyStatistical.setDate("Thứ " + model.getCompletedWeekDate() + ", ngày " +
                                                 model.getCompletedMonthDate());
                                         dailyStatistical.setFee(model.getTotalFee());
-                                        total2 += model.getTotalFee();
                                     }
                                     statisticals2.add(dailyStatistical);
                                 }
@@ -425,6 +499,14 @@ public class MonthlyStatisticalFragment extends Fragment
                                     for (DataSnapshot item2:snapshots2){
                                         Log.e("sample data", "" + item2.toString());
                                         Statistical model = item2.getValue(Statistical.class);
+                                        dailyStatistical.setFinishedTime("Thứ " + model.getCompletedWeekDate() + ", ngày " +
+                                                model.getCompletedMonthDate() + ", " + model.getCompletedHour() + ": " + model.getCompletedMinutes());
+                                        dailyStatistical.setFixedLocation(model.getFixLocation());
+                                        dailyStatistical.setServiceFee(model.getServiceFee());
+                                        dailyStatistical.setServiceName(model.getServiceName());
+                                        dailyStatistical.setServiceVAT(model.getVatFee());
+                                        dailyStatistical.setCustomerName(model.getCustomerName());
+                                        dailyStatistical.setCustomerPhone(model.getCustomerPhone());
                                         dailyStatistical.setDate("Thứ " + model.getCompletedWeekDate() + ", ngày " +
                                                 model.getCompletedMonthDate());
                                         dailyStatistical.setFee(model.getTotalFee());
@@ -435,10 +517,31 @@ public class MonthlyStatisticalFragment extends Fragment
                             }
                             CustomListViewAdapter_forEachDayStatistical adapter = new CustomListViewAdapter_forEachDayStatistical(context, R.layout.customlistview_statistical_for_eachday, statisticals1);
                             lvMonth1.setAdapter(adapter);
+                            lvMonth1.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                                @Override
+                                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                                    DailyStatistical currentItem = statisticals1.get(position);
+                                    createStatisticalDetailDialog(currentItem);
+                                }
+                            });
                             CustomListViewAdapter_forEachDayStatistical adapter1 = new CustomListViewAdapter_forEachDayStatistical(context, R.layout.customlistview_statistical_for_eachday, statisticals2);
                             lvMonth2.setAdapter(adapter1);
+                            lvMonth2.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                                @Override
+                                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                                    DailyStatistical currentItem = statisticals2.get(position);
+                                    createStatisticalDetailDialog(currentItem);
+                                }
+                            });
                             CustomListViewAdapter_forEachDayStatistical adapter2 = new CustomListViewAdapter_forEachDayStatistical(context, R.layout.customlistview_statistical_for_eachday, statisticals3);
                             lvMonth3.setAdapter(adapter2);
+                            lvMonth3.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                                @Override
+                                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                                    DailyStatistical currentItem = statisticals3.get(position);
+                                    createStatisticalDetailDialog(currentItem);
+                                }
+                            });
                         }
                         Log.e("total", "Tháng 1: " + total1 + ", tháng 2: " + total2 + ", tháng 3: " + total3);
                         TongDoanhThuTrongQuy.setText("$" + (total1 + total2 + total3));
@@ -469,9 +572,9 @@ public class MonthlyStatisticalFragment extends Fragment
                         for (DataSnapshot item:snapshots){
                             Log.e("sample data", "" + item.toString());
                             String month = (Integer.parseInt(item.getKey()) + 1) + "";
-                            List<DailyStatistical> statisticals1 = new ArrayList<>();
-                            List<DailyStatistical> statisticals2 = new ArrayList<>();
-                            List<DailyStatistical> statisticals3 = new ArrayList<>();
+                            final List<DailyStatistical> statisticals1 = new ArrayList<>();
+                            final List<DailyStatistical> statisticals2 = new ArrayList<>();
+                            final List<DailyStatistical> statisticals3 = new ArrayList<>();
                             if (month.equals("7")){
                                 Iterable<DataSnapshot> snapshots1 = item.getChildren();
                                 for (DataSnapshot item1:snapshots1){
@@ -481,6 +584,14 @@ public class MonthlyStatisticalFragment extends Fragment
                                     for (DataSnapshot item2:snapshots2){
                                         Log.e("sample data", "" + item2.toString());
                                         Statistical model = item2.getValue(Statistical.class);
+                                        dailyStatistical.setFinishedTime("Thứ " + model.getCompletedWeekDate() + ", ngày " +
+                                                model.getCompletedMonthDate() + ", " + model.getCompletedHour() + ": " + model.getCompletedMinutes());
+                                        dailyStatistical.setFixedLocation(model.getFixLocation());
+                                        dailyStatistical.setServiceFee(model.getServiceFee());
+                                        dailyStatistical.setServiceName(model.getServiceName());
+                                        dailyStatistical.setServiceVAT(model.getVatFee());
+                                        dailyStatistical.setCustomerName(model.getCustomerName());
+                                        dailyStatistical.setCustomerPhone(model.getCustomerPhone());
                                         dailyStatistical.setDate("Thứ " + model.getCompletedWeekDate() + ", ngày " +
                                                 model.getCompletedMonthDate());
                                         dailyStatistical.setFee(model.getTotalFee());
@@ -498,6 +609,14 @@ public class MonthlyStatisticalFragment extends Fragment
                                     for (DataSnapshot item2:snapshots2){
                                         Log.e("sample data", "" + item2.toString());
                                         Statistical model = item2.getValue(Statistical.class);
+                                        dailyStatistical.setFinishedTime("Thứ " + model.getCompletedWeekDate() + ", ngày " +
+                                                model.getCompletedMonthDate() + ", " + model.getCompletedHour() + ": " + model.getCompletedMinutes());
+                                        dailyStatistical.setFixedLocation(model.getFixLocation());
+                                        dailyStatistical.setServiceFee(model.getServiceFee());
+                                        dailyStatistical.setServiceName(model.getServiceName());
+                                        dailyStatistical.setServiceVAT(model.getVatFee());
+                                        dailyStatistical.setCustomerName(model.getCustomerName());
+                                        dailyStatistical.setCustomerPhone(model.getCustomerPhone());
                                         dailyStatistical.setDate("Thứ " + model.getCompletedWeekDate() + ", ngày " +
                                                 model.getCompletedMonthDate());
                                         dailyStatistical.setFee(model.getTotalFee());
@@ -515,6 +634,14 @@ public class MonthlyStatisticalFragment extends Fragment
                                     for (DataSnapshot item2:snapshots2){
                                         Log.e("sample data", "" + item2.toString());
                                         Statistical model = item2.getValue(Statistical.class);
+                                        dailyStatistical.setFinishedTime("Thứ " + model.getCompletedWeekDate() + ", ngày " +
+                                                model.getCompletedMonthDate() + ", " + model.getCompletedHour() + ": " + model.getCompletedMinutes());
+                                        dailyStatistical.setFixedLocation(model.getFixLocation());
+                                        dailyStatistical.setServiceFee(model.getServiceFee());
+                                        dailyStatistical.setServiceName(model.getServiceName());
+                                        dailyStatistical.setServiceVAT(model.getVatFee());
+                                        dailyStatistical.setCustomerName(model.getCustomerName());
+                                        dailyStatistical.setCustomerPhone(model.getCustomerPhone());
                                         dailyStatistical.setDate("Thứ " + model.getCompletedWeekDate() + ", ngày " +
                                                 model.getCompletedMonthDate());
                                         dailyStatistical.setFee(model.getTotalFee());
@@ -525,10 +652,31 @@ public class MonthlyStatisticalFragment extends Fragment
                             }
                             CustomListViewAdapter_forEachDayStatistical adapter = new CustomListViewAdapter_forEachDayStatistical(context, R.layout.customlistview_statistical_for_eachday, statisticals1);
                             lvMonth1.setAdapter(adapter);
+                            lvMonth1.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                                @Override
+                                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                                    DailyStatistical currentItem = statisticals1.get(position);
+                                    createStatisticalDetailDialog(currentItem);
+                                }
+                            });
                             CustomListViewAdapter_forEachDayStatistical adapter1 = new CustomListViewAdapter_forEachDayStatistical(context, R.layout.customlistview_statistical_for_eachday, statisticals2);
                             lvMonth2.setAdapter(adapter1);
+                            lvMonth2.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                                @Override
+                                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                                    DailyStatistical currentItem = statisticals2.get(position);
+                                    createStatisticalDetailDialog(currentItem);
+                                }
+                            });
                             CustomListViewAdapter_forEachDayStatistical adapter2 = new CustomListViewAdapter_forEachDayStatistical(context, R.layout.customlistview_statistical_for_eachday, statisticals3);
                             lvMonth3.setAdapter(adapter2);
+                            lvMonth3.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                                @Override
+                                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                                    DailyStatistical currentItem = statisticals3.get(position);
+                                    createStatisticalDetailDialog(currentItem);
+                                }
+                            });
                         }
                         Log.e("total", "Tháng 1: " + total1 + ", tháng 2: " + total2 + ", tháng 3: " + total3);
                         TongDoanhThuTrongQuy.setText("$" + (total1 + total2 + total3));
@@ -559,9 +707,9 @@ public class MonthlyStatisticalFragment extends Fragment
                         for (DataSnapshot item:snapshots){
                             Log.e("sample data", "" + item.toString());
                             String month = (Integer.parseInt(item.getKey()) + 1) + "";
-                            List<DailyStatistical> statisticals1 = new ArrayList<>();
-                            List<DailyStatistical> statisticals2 = new ArrayList<>();
-                            List<DailyStatistical> statisticals3 = new ArrayList<>();
+                            final List<DailyStatistical> statisticals1 = new ArrayList<>();
+                            final List<DailyStatistical> statisticals2 = new ArrayList<>();
+                            final List<DailyStatistical> statisticals3 = new ArrayList<>();
                             if (month.equals("10")){
                                 Iterable<DataSnapshot> snapshots1 = item.getChildren();
                                 for (DataSnapshot item1:snapshots1){
@@ -571,6 +719,14 @@ public class MonthlyStatisticalFragment extends Fragment
                                     for (DataSnapshot item2:snapshots2){
                                         Log.e("sample data", "" + item2.toString());
                                         Statistical model = item2.getValue(Statistical.class);
+                                        dailyStatistical.setFinishedTime("Thứ " + model.getCompletedWeekDate() + ", ngày " +
+                                                model.getCompletedMonthDate() + ", " + model.getCompletedHour() + ": " + model.getCompletedMinutes());
+                                        dailyStatistical.setFixedLocation(model.getFixLocation());
+                                        dailyStatistical.setServiceFee(model.getServiceFee());
+                                        dailyStatistical.setServiceName(model.getServiceName());
+                                        dailyStatistical.setServiceVAT(model.getVatFee());
+                                        dailyStatistical.setCustomerName(model.getCustomerName());
+                                        dailyStatistical.setCustomerPhone(model.getCustomerPhone());
                                         dailyStatistical.setDate("Thứ " + model.getCompletedWeekDate() + ", ngày " +
                                                 model.getCompletedMonthDate());
                                         dailyStatistical.setFee(model.getTotalFee());
@@ -588,6 +744,14 @@ public class MonthlyStatisticalFragment extends Fragment
                                     for (DataSnapshot item2:snapshots2){
                                         Log.e("sample data", "" + item2.toString());
                                         Statistical model = item2.getValue(Statistical.class);
+                                        dailyStatistical.setFinishedTime("Thứ " + model.getCompletedWeekDate() + ", ngày " +
+                                                model.getCompletedMonthDate() + ", " + model.getCompletedHour() + ": " + model.getCompletedMinutes());
+                                        dailyStatistical.setFixedLocation(model.getFixLocation());
+                                        dailyStatistical.setServiceFee(model.getServiceFee());
+                                        dailyStatistical.setServiceName(model.getServiceName());
+                                        dailyStatistical.setServiceVAT(model.getVatFee());
+                                        dailyStatistical.setCustomerName(model.getCustomerName());
+                                        dailyStatistical.setCustomerPhone(model.getCustomerPhone());
                                         dailyStatistical.setDate("Thứ " + model.getCompletedWeekDate() + ", ngày " +
                                                 model.getCompletedMonthDate());
                                         dailyStatistical.setFee(model.getTotalFee());
@@ -605,6 +769,14 @@ public class MonthlyStatisticalFragment extends Fragment
                                     for (DataSnapshot item2:snapshots2){
                                         Log.e("sample data", "" + item2.toString());
                                         Statistical model = item2.getValue(Statistical.class);
+                                        dailyStatistical.setFinishedTime("Thứ " + model.getCompletedWeekDate() + ", ngày " +
+                                                model.getCompletedMonthDate() + ", " + model.getCompletedHour() + ": " + model.getCompletedMinutes());
+                                        dailyStatistical.setFixedLocation(model.getFixLocation());
+                                        dailyStatistical.setServiceFee(model.getServiceFee());
+                                        dailyStatistical.setServiceName(model.getServiceName());
+                                        dailyStatistical.setServiceVAT(model.getVatFee());
+                                        dailyStatistical.setCustomerName(model.getCustomerName());
+                                        dailyStatistical.setCustomerPhone(model.getCustomerPhone());
                                         dailyStatistical.setDate("Thứ " + model.getCompletedWeekDate() + ", ngày " +
                                                 model.getCompletedMonthDate());
                                         dailyStatistical.setFee(model.getTotalFee());
@@ -615,10 +787,31 @@ public class MonthlyStatisticalFragment extends Fragment
                             }
                             CustomListViewAdapter_forEachDayStatistical adapter = new CustomListViewAdapter_forEachDayStatistical(context, R.layout.customlistview_statistical_for_eachday, statisticals1);
                             lvMonth1.setAdapter(adapter);
+                            lvMonth1.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                                @Override
+                                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                                    DailyStatistical currentItem = statisticals1.get(position);
+                                    createStatisticalDetailDialog(currentItem);
+                                }
+                            });
                             CustomListViewAdapter_forEachDayStatistical adapter1 = new CustomListViewAdapter_forEachDayStatistical(context, R.layout.customlistview_statistical_for_eachday, statisticals2);
                             lvMonth2.setAdapter(adapter1);
+                            lvMonth2.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                                @Override
+                                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                                    DailyStatistical currentItem = statisticals2.get(position);
+                                    createStatisticalDetailDialog(currentItem);
+                                }
+                            });
                             CustomListViewAdapter_forEachDayStatistical adapter2 = new CustomListViewAdapter_forEachDayStatistical(context, R.layout.customlistview_statistical_for_eachday, statisticals3);
                             lvMonth3.setAdapter(adapter2);
+                            lvMonth3.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                                @Override
+                                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                                    DailyStatistical currentItem = statisticals3.get(position);
+                                    createStatisticalDetailDialog(currentItem);
+                                }
+                            });
 
                         }
                         Log.e("total", "Tháng 1: " + total1 + ", tháng 2: " + total2 + ", tháng 3: " + total3);
@@ -664,49 +857,7 @@ public class MonthlyStatisticalFragment extends Fragment
 
     @Override
     public void onItemSelected(MaterialSpinner view, int position, long id, Object item) {
-        YEAR = view.getText().toString();
-        GenerateDataFromCloud("Quy1", YEAR);
-        if (quy1.isChecked()) {
-            GenerateDataFromCloud("Quy1", YEAR);
-        }
-        if (quy2.isChecked()) {
-            GenerateDataFromCloud("Quy2", YEAR);
-        }
-        if (quy3.isChecked()) {
-            GenerateDataFromCloud("Quy3", YEAR);
-        }
-        if (quy4.isChecked()) {
-            GenerateDataFromCloud("Quy4", YEAR);
-        }
 
-        quy1.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                GenerateDataFromCloud("Quy1", YEAR);
-                quy1.setChecked(true);
-            }
-        });
-        quy2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                GenerateDataFromCloud("Quy2", YEAR);
-                quy2.setChecked(true);
-            }
-        });
-        quy3.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                GenerateDataFromCloud("Quy3", YEAR);
-                quy3.setChecked(true);
-            }
-        });
-        quy4.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                GenerateDataFromCloud("Quy4", YEAR);
-                quy4.setChecked(true);
-            }
-        });
     }
 
     @Override
@@ -728,5 +879,41 @@ public class MonthlyStatisticalFragment extends Fragment
         s.setSpan(new StyleSpan(Typeface.ITALIC), s.length() - 14, s.length(), 0);
         s.setSpan(new ForegroundColorSpan(ColorTemplate.getHoloBlue()), s.length() - 14, s.length(), 0);
         return s;
+    }
+
+    private void createStatisticalDetailDialog(DailyStatistical item){
+        AlertDialog.Builder dialog = new AlertDialog.Builder(context);
+        dialog.setTitle("Thông tin chi tiết hóa đơn");
+        LayoutInflater inflater = this.getLayoutInflater();
+        View statisticalDetail = inflater.inflate(R.layout.specific_statistical_dialog, null);
+
+        final TextView txtTotalFee = (TextView) statisticalDetail.findViewById(R.id.txtDetailTotal);
+        final TextView txtCustomerName = (TextView) statisticalDetail.findViewById(R.id.txtDetailName);
+        final TextView txtCustomerPhone = (TextView) statisticalDetail.findViewById(R.id.customer_phone);
+        final TextView txtServiceName = (TextView) statisticalDetail.findViewById(R.id.txtServiceName);
+        final TextView txtServiceFee = (TextView) statisticalDetail.findViewById(R.id.txtServiceFee);
+        final TextView txt_ServiceVATFee = (TextView) statisticalDetail.findViewById(R.id.txt_ServiceVATFee);
+        final TextView txtFix_Location = (TextView) statisticalDetail.findViewById(R.id.txtFix_Location);
+        final TextView txtFix_time = (TextView) statisticalDetail.findViewById(R.id.txtFix_time);
+
+        txtTotalFee.setText("$" + item.getFee());
+        txtCustomerName.setText(item.getCustomerName());
+        txtCustomerPhone.setText(item.getCustomerPhone());
+        txtServiceName.setText(item.getServiceName());
+        txtServiceFee.setText("$" + item.getServiceFee());
+        txt_ServiceVATFee.setText("$" + item.getServiceVAT());
+        txtFix_Location.setText(item.getFixedLocation());
+        txtFix_time.setText(item.getFinishedTime());
+
+        dialog.setView(statisticalDetail);
+
+        dialog.setPositiveButton("Đóng", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int which) {
+                dialogInterface.dismiss();
+            }
+        });
+
+        dialog.show();
     }
 }

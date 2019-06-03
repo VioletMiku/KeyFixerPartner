@@ -119,6 +119,8 @@ public class FixerHome extends AppCompatActivity
 
     private GoogleMap mMap;
     private IGoogleAPI mService;
+    FusedLocationProviderClient fusedLocationProviderClient;
+    LocationCallback locationCallback;
     //play services
     private static final int MY_PERMISSION_REQUEST_CODE = 7000;
     private static final int PLAY_SERVICE_RES_REQUEST = 7001;
@@ -132,6 +134,7 @@ public class FixerHome extends AppCompatActivity
 
     DatabaseReference house_service_location, car_service_location, bike_service_location;
     GeoFire geoFire_for_house_service, geoFire_for_car_service, geoFire_for_bike_service;
+    Marker mCurrent;
     //MaterialAnimatedSwitch location_switch;
     SupportMapFragment mapFragment;
     ImageView gpson, gpsoff;
@@ -181,7 +184,7 @@ public class FixerHome extends AppCompatActivity
         firebaseStorage = FirebaseStorage.getInstance();
         storageReference = firebaseStorage.getReference();
 
-        Common.fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
         final DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         final ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -241,6 +244,9 @@ public class FixerHome extends AppCompatActivity
         if (Common.currentFixer.getAvatarUrl() != null && !TextUtils.isEmpty(Common.currentFixer.getAvatarUrl())) {
             Picasso.with(this).load(Common.currentFixer.getAvatarUrl()).into(imageAvatar);
         }
+
+        if (Common.isOver)
+            createAccountFeeOverDialog();
 
         //mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -329,16 +335,10 @@ public class FixerHome extends AppCompatActivity
                 buildLocationRequest();
                 if (ActivityCompat.checkSelfPermission(FixerHome.this , Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                         && ActivityCompat.checkSelfPermission(FixerHome.this , Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    // TODO: Consider calling
-                    //    ActivityCompat#requestPermissions
-                    // here to request the missing permissions, and then overriding
-                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                    //                                          int[] grantResults)
-                    // to handle the case where the user grants the permission. See the documentation
-                    // for ActivityCompat#requestPermissions for more details.
+
                     return;
                 }
-                Common.fusedLocationProviderClient.requestLocationUpdates(mLocationRequest , Common.locationCallback , Looper.myLooper());
+                fusedLocationProviderClient.requestLocationUpdates(mLocationRequest , locationCallback , Looper.myLooper());
 
                 //geo fire
                 if (Common.currentFixer.isCanFixHouseKey()){
@@ -365,8 +365,8 @@ public class FixerHome extends AppCompatActivity
                 gpsoff.setVisibility(View.VISIBLE);
                 try {
                     FirebaseDatabase.getInstance().goOffline();//set disconnected when the fixer leave
-                    Common.fusedLocationProviderClient.removeLocationUpdates(Common.locationCallback);
-                    Common.mCurrent.remove();
+                    fusedLocationProviderClient.removeLocationUpdates(locationCallback);
+                    mCurrent.remove();
                     mMap.clear();
                     if (handler != null)
                         handler.removeCallbacks(drawPathRunnable);
@@ -376,34 +376,7 @@ public class FixerHome extends AppCompatActivity
                 }
             }
         });
-        /*
-        * location_switch.setOnCheckedChangeListener(new MaterialAnimatedSwitch.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(boolean isOnline) {
-                if (isOnline){
-                    FirebaseDatabase.getInstance().goOnline();//set connected when the fixer comeback
-                    buildLocationCallback();
-                    buildLocationRequest();
-                    fusedLocationProviderClient.requestLocationUpdates(mLocationRequest, locationCallback, Looper.myLooper());
-                    displayLocation();
-                    Snackbar.make(mapFragment.getView(),"Bạn đang online",Snackbar.LENGTH_SHORT).show();
-                }
-                else{
-                    try{
-                        FirebaseDatabase.getInstance().goOffline();//set disconnected when the fixer leave
-                        fusedLocationProviderClient.removeLocationUpdates(locationCallback);
-                        mCurrent.remove();
-                        mMap.clear();
-                        if (handler != null)
-                            handler.removeCallbacks(drawPathRunnable);
-                        Snackbar.make(mapFragment.getView(),"Bạn đang offline",Snackbar.LENGTH_SHORT).show();
-                    }catch(NullPointerException ex){
-                        Toast.makeText(FixerHome.this, "Vui lòng bật GPS rồi thử lại !", Toast.LENGTH_SHORT).show();
-                    }
-                }
-            }
-        });
-        * */
+
         setupLocation();
 
         mService = Common.getGoogleAPI();
@@ -501,7 +474,7 @@ public class FixerHome extends AppCompatActivity
 
                         carMarker = mMap.addMarker(new MarkerOptions().position(currentPosition)
                                 .flat(true)
-                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.car)));
+                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.icons8_key_2_24)));
 
                         handler = new Handler();
                         index = -1;
@@ -623,7 +596,7 @@ public class FixerHome extends AppCompatActivity
     }
 
     private void buildLocationCallback() {
-        Common.locationCallback = new LocationCallback() {
+        locationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult locationResult) {
                 for (Location location : locationResult.getLocations())
@@ -646,7 +619,7 @@ public class FixerHome extends AppCompatActivity
                 && ActivityCompat.checkSelfPermission(this , Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
-        Common.fusedLocationProviderClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
+        fusedLocationProviderClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
             @Override
             public void onSuccess(Location location) {
                 Common.mLastLocation = location;
@@ -663,10 +636,10 @@ public class FixerHome extends AppCompatActivity
                                         @Override
                                         public void onComplete(String key , DatabaseError error) {
                                             //Add marker
-                                            if (Common.mCurrent != null) {
-                                                Common.mCurrent.remove(); //remove already marker
+                                            if (mCurrent != null) {
+                                                mCurrent.remove(); //remove already marker
                                             }
-                                            Common.mCurrent = mMap.addMarker(new MarkerOptions().position(new LatLng(latitude , longtitude)).title("Bạn"));
+                                            mCurrent = mMap.addMarker(new MarkerOptions().position(new LatLng(latitude , longtitude)).title("Bạn"));
                                             //Move camera to this position
                                             mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude , longtitude) , 15.0f));
 
@@ -678,10 +651,10 @@ public class FixerHome extends AppCompatActivity
                                         @Override
                                         public void onComplete(String key , DatabaseError error) {
                                             //Add marker
-                                            if (Common.mCurrent != null) {
-                                                Common.mCurrent.remove(); //remove already marker
+                                            if (mCurrent != null) {
+                                                mCurrent.remove(); //remove already marker
                                             }
-                                            Common.mCurrent = mMap.addMarker(new MarkerOptions().position(new LatLng(latitude , longtitude)).title("Bạn"));
+                                            mCurrent = mMap.addMarker(new MarkerOptions().position(new LatLng(latitude , longtitude)).title("Bạn"));
                                             //Move camera to this position
                                             mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude , longtitude) , 15.0f));
 
@@ -693,10 +666,10 @@ public class FixerHome extends AppCompatActivity
                                         @Override
                                         public void onComplete(String key , DatabaseError error) {
                                             //Add marker
-                                            if (Common.mCurrent != null) {
-                                                Common.mCurrent.remove(); //remove already marker
+                                            if (mCurrent != null) {
+                                                mCurrent.remove(); //remove already marker
                                             }
-                                            Common.mCurrent = mMap.addMarker(new MarkerOptions().position(new LatLng(latitude , longtitude)).title("Bạn"));
+                                            mCurrent = mMap.addMarker(new MarkerOptions().position(new LatLng(latitude , longtitude)).title("Bạn"));
                                             //Move camera to this position
                                             mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude , longtitude) , 15.0f));
 
@@ -742,10 +715,8 @@ public class FixerHome extends AppCompatActivity
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-
         return super.onOptionsItemSelected(item);
     }
-
 
     private void ActiveSuccess(){
         SweetAlertDialog dialog = new SweetAlertDialog(this, SweetAlertDialog.SUCCESS_TYPE);
@@ -813,8 +784,8 @@ public class FixerHome extends AppCompatActivity
             Intent history = new Intent(FixerHome.this, Main2Activity.class);
             startActivity(history);
         } else if (id == R.id.nav_statistical_management) {
-            Intent intent2 = new Intent(FixerHome.this, StatisticalManagementActivity.class);
-            startActivity(intent2);
+            Intent management = new Intent(FixerHome.this, StatisticalManagementActivity.class);
+            startActivity(management);
         } else if (id == R.id.nav_servicetype) {
             ShowDialogupdateServiceType();
         } else if (id == R.id.nav_signout) {
@@ -1362,7 +1333,7 @@ public class FixerHome extends AppCompatActivity
                     @Override
                     public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
                         double progress = (100.0 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
-                        mDialog.setMessage("Đã tải được " + progress + "%");
+                        mDialog.setMessage("Đã tải được " + (int) progress + "%");
                     }
                 }).addOnFailureListener(new OnFailureListener() {
                     @Override
@@ -1397,7 +1368,7 @@ public class FixerHome extends AppCompatActivity
             // for ActivityCompat#requestPermissions for more details.
             return;
         }
-        Common.fusedLocationProviderClient.requestLocationUpdates(mLocationRequest , Common.locationCallback , Looper.myLooper());
+        fusedLocationProviderClient.requestLocationUpdates(mLocationRequest , locationCallback , Looper.myLooper());
     }
 
     Runnable drawPathRunnable = new Runnable() {
@@ -1453,6 +1424,15 @@ public class FixerHome extends AppCompatActivity
             return (float) ((90 - Math.toDegrees(Math.atan(lng / lat))) + 270);
         }
         return -1;
+    }
+
+    private void createAccountFeeOverDialog(){
+        SweetAlertDialog dialog = new SweetAlertDialog(this, SweetAlertDialog.WARNING_TYPE);
+        dialog.getProgressHelper().setBarColor(Color.parseColor("#A5DC86"));
+        dialog.setTitle("Tài khoản hết tiền");
+        dialog.setTitleText("Tài khoản của bạn vừa hết tiền. Vui lòng về trung tâm để nạp tiền!");
+        dialog.setCancelable(true);
+        dialog.show();
     }
 
 }

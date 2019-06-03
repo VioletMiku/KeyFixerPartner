@@ -239,9 +239,8 @@ public class Main2Activity extends AppCompatActivity
                 startActivity(intent);
                 break;
             case R.id.nav_statistical_management:
-                Intent intent2 = new Intent(Main2Activity.this, StatisticalManagementActivity.class);
-                startActivity(intent2);
-                break;
+                Intent management = new Intent(Main2Activity.this, StatisticalManagementActivity.class);
+                startActivity(management);
             case R.id.nav_servicetype:
                 ShowDialogupdateServiceType();
                 break;

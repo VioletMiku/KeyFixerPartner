@@ -1,12 +1,17 @@
 package com.keyfixer.partner;
 
+import android.content.Context;
 import android.content.Intent;
 import android.media.MediaPlayer;
+import android.os.Build;
+import android.os.PowerManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -47,6 +52,8 @@ public class CustomerCallActivity extends AppCompatActivity implements View.OnCl
     }
 
     private void Initializing() {
+        TurnOnScreen();
+
         txttime = (TextView) findViewById(R.id.txt_time);
         txtdistance = (TextView) findViewById(R.id.txt_distance);
         txtaddress = (TextView) findViewById(R.id.txt_Address);
@@ -163,6 +170,7 @@ public class CustomerCallActivity extends AppCompatActivity implements View.OnCl
     }
 
     private void cancelBooking(String customerId) {
+        Common.RemoveRequest();
         Token token = new Token(customerId);
 
         Map<String, String> content = new HashMap<>();
@@ -184,4 +192,14 @@ public class CustomerCallActivity extends AppCompatActivity implements View.OnCl
             }
         });
     }
+
+    private void TurnOnScreen(){
+        PowerManager pm = (PowerManager) this.getSystemService(Context.POWER_SERVICE);
+        boolean isScreenOn = Build.VERSION.SDK_INT >= 20 ? pm.isInteractive() : pm.isScreenOn(); // check if screen is on
+        if (!isScreenOn) {
+            PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, "myApp:notificationLock");
+            wl.acquire(3000); //set your time in milliseconds
+        }
+    }
+
 }

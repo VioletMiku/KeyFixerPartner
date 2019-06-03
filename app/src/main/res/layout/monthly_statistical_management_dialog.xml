@@ -120,91 +120,125 @@
                     android:outlineSpotShadowColor="@color/ballReleaseColor"/>
             </RelativeLayout>
 
-            <RelativeLayout
-                android:layout_below="@id/piechartView1"
-                android:padding="5dp"
-                android:layout_margin="10dp"
-                android:background="@drawable/corner_and_shadow"
+            <TextView
+                android:layout_below="@+id/piechartView1"
+                android:id="@+id/titlebelowPieChart1"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="wrap_content"
+                android:text="Phí thu nhập cụ thể từng tháng"
+                android:textColor="@color/baseReleaseColor"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                android:layout_marginTop="20dp"
+                android:layout_marginLeft="20dp"/>
 
-                <TextView
-                    android:id="@+id/titlebelowPieChart1"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Phí thu nhập cụ thể từng tháng"
-                    android:textColor="@color/baseReleaseColor"
-                    android:textStyle="bold"
-                    android:textSize="18sp"
-                    android:layout_marginTop="20dp"
-                    android:layout_marginLeft="20dp"/>
+            <HorizontalScrollView
+                android:layout_below="@id/titlebelowPieChart1"
+                android:layout_width="match_parent"
+                android:layout_height="500dp">
 
-                <TextView
+                <LinearLayout
+                    android:orientation="horizontal"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/Month1_"
-                    android:text="Tháng 13"
-                    android:textAlignment="center"
-                    android:textColor="@color/baseReleaseColor"
-                    android:textSize="15sp"
-                    android:textStyle="bold"
-                    android:layout_below="@+id/titlebelowPieChart1"
-                    android:layout_marginTop="15dp"/>
+                    android:layout_height="match_parent">
 
-                <ListView
-                    android:id="@+id/FirstMonth1"
-                    android:dividerHeight="10dp"
-                    android:layout_margin="10dp"
-                    android:layout_below="@+id/Month1_"
-                    android:nestedScrollingEnabled="true"
-                    android:background="@color/WhiteBackground"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"/>
+                    <RelativeLayout
+                        android:paddingLeft="25dp"
+                        android:paddingRight="25dp"
+                        android:id="@+id/month1"
+                        android:layout_margin="10dp"
+                        android:background="@drawable/corner_and_shadow"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
 
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/Month2_"
-                    android:text="Tháng 13"
-                    android:textAlignment="center"
-                    android:textColor="@color/baseReleaseColor"
-                    android:textSize="15sp"
-                    android:textStyle="bold"
-                    android:layout_below="@+id/FirstMonth1"
-                    android:layout_marginTop="15dp"/>
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/Month1_"
+                            android:text="Tháng 13"
+                            android:textAlignment="center"
+                            android:textColor="@color/baseReleaseColor"
+                            android:textSize="15sp"
+                            android:textStyle="bold"
+                            android:layout_marginTop="15dp"/>
 
-                <ListView
-                    android:id="@+id/SecondMonth1"
-                    android:dividerHeight="10dp"
-                    android:layout_margin="10dp"
-                    android:layout_below="@+id/Month2_"
-                    android:nestedScrollingEnabled="true"
-                    android:background="@color/WhiteBackground"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"/>
+                        <ListView
+                            android:id="@+id/FirstMonth1"
+                            android:dividerHeight="10dp"
+                            android:layout_margin="10dp"
+                            android:layout_below="@+id/Month1_"
+                            android:nestedScrollingEnabled="true"
+                            android:background="@color/WhiteBackground"
+                            android:layout_width="match_parent"
+                            android:minHeight="200dp"
+                            android:layout_height="wrap_content"/>
+                    </RelativeLayout>
 
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/Month3_"
-                    android:text="Tháng 13"
-                    android:textAlignment="center"
-                    android:textColor="@color/baseReleaseColor"
-                    android:textSize="15sp"
-                    android:textStyle="bold"
-                    android:layout_below="@+id/SecondMonth1"
-                    android:layout_marginTop="15dp"/>
+                    <RelativeLayout
+                        android:paddingLeft="25dp"
+                        android:paddingRight="25dp"
+                        android:id="@+id/month2"
+                        android:layout_margin="10dp"
+                        android:background="@drawable/corner_and_shadow"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
 
-                <ListView
-                    android:id="@+id/ThirdMonth1"
-                    android:dividerHeight="10dp"
-                    android:layout_margin="10dp"
-                    android:layout_below="@+id/Month3_"
-                    android:nestedScrollingEnabled="true"
-                    android:background="@color/WhiteBackground"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"/>
-            </RelativeLayout>
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/Month2_"
+                            android:text="Tháng 13"
+                            android:textAlignment="center"
+                            android:textColor="@color/baseReleaseColor"
+                            android:textSize="15sp"
+                            android:textStyle="bold"
+                            android:layout_marginTop="15dp"/>
+
+                        <ListView
+                            android:id="@+id/SecondMonth1"
+                            android:dividerHeight="10dp"
+                            android:layout_margin="10dp"
+                            android:layout_below="@+id/Month2_"
+                            android:nestedScrollingEnabled="true"
+                            android:background="@color/WhiteBackground"
+                            android:layout_width="match_parent"
+                            android:minHeight="200dp"
+                            android:layout_height="wrap_content"/>
+                    </RelativeLayout>
+
+                    <RelativeLayout
+                        android:paddingLeft="25dp"
+                        android:paddingRight="25dp"
+                        android:id="@+id/months"
+                        android:layout_margin="10dp"
+                        android:background="@drawable/corner_and_shadow"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:id="@+id/Month3_"
+                                android:text="Tháng 13"
+                                android:textAlignment="center"
+                                android:textColor="@color/baseReleaseColor"
+                                android:textSize="15sp"
+                                android:textStyle="bold"
+                                android:layout_marginTop="15dp"/>
+
+                            <ListView
+                                android:id="@+id/ThirdMonth1"
+                                android:dividerHeight="10dp"
+                                android:layout_margin="10dp"
+                                android:layout_below="@+id/Month3_"
+                                android:nestedScrollingEnabled="true"
+                                android:background="@color/WhiteBackground"
+                                android:layout_width="match_parent"
+                                android:minHeight="200dp"
+                                android:layout_height="wrap_content"/>
+                    </RelativeLayout>
+                </LinearLayout>
+            </HorizontalScrollView>
         </RelativeLayout>
     </ScrollView>
 </RelativeLayout>

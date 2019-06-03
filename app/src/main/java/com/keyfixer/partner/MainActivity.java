@@ -1,15 +1,20 @@
 package com.keyfixer.partner;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
+import android.graphics.Color;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Base64;
+import android.util.EventLogTags;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -25,6 +30,8 @@ import com.facebook.accountkit.AccountKitLoginResult;
 import com.facebook.accountkit.ui.AccountKitActivity;
 import com.facebook.accountkit.ui.AccountKitConfiguration;
 import com.facebook.accountkit.ui.LoginType;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -39,7 +46,10 @@ import com.google.firebase.database.FirebaseDatabase;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
+import java.util.Map;
 
+import cn.pedant.SweetAlert.SweetAlertDialog;
 import dmax.dialog.SpotsDialog;
 import io.paperdb.Paper;
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
@@ -80,47 +90,61 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         txt_forget_password = (TextView) findViewById(R.id.txt_forgot_password);
         //Init view
         GetButtonControl();
+        CheckAccountFee();
+        ConnectivityManager conMgr =  (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = conMgr.getActiveNetworkInfo();
+        if (netInfo == null){
+            createInternetNotAvailableDialog();
+        }else{
+            // if network is available
+            //Auto login with Facebook account kit for second time
+            if (AccountKit.getCurrentAccessToken() != null) {
+                //create dialog
+                final AlertDialog waitingDialog = new SpotsDialog(this);
+                waitingDialog.show();
+                waitingDialog.setMessage("Chờ trong giây lát");
+                waitingDialog.setCancelable(false);
+                AccountKit.getCurrentAccount(new AccountKitCallback<Account>() {
+                    @Override
+                    public void onSuccess(Account account) {
 
-        //Auto login with Facebook account kit for second time
-        if (AccountKit.getCurrentAccessToken() != null){
-            //create dialog
-            final AlertDialog waitingDialog = new SpotsDialog(this);
-            waitingDialog.show();
-            waitingDialog.setMessage("Chờ trong giây lát");
-            waitingDialog.setCancelable(false);
+                        users.child(account.getId()).addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                Common.currentFixer = dataSnapshot.getValue(Fixer.class);
+                                Common.isAdmin = dataSnapshot.getValue(Fixer.class).isAdmin();
+                                Common.isActivated = dataSnapshot.getValue(Fixer.class).isActivated();
+                                Intent homeIntent = new Intent(MainActivity.this, FixerHome.class);
+                                startActivity(homeIntent);
 
-            AccountKit.getCurrentAccount(new AccountKitCallback<Account>() {
-                @Override
-                public void onSuccess(Account account) {
+                                //dismiss dialog
+                                waitingDialog.dismiss();
+                                finish();
+                            }
 
-                    users.child(account.getId()).addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-                            Common.currentFixer = dataSnapshot.getValue(Fixer.class);
-                            Common.isAdmin = dataSnapshot.getValue(Fixer.class).isAdmin();
-                            Common.isActivated = dataSnapshot.getValue(Fixer.class).isActivated();
-                            Intent homeIntent =new Intent(MainActivity.this, FixerHome.class);
-                            startActivity(homeIntent);
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
 
-                            //dismiss dialog
-                            waitingDialog.dismiss();
-                            finish();
-                        }
+                            }
+                        });
+                    }
 
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {
+                    @Override
+                    public void onError(AccountKitError accountKitError) {
 
-                        }
-                    });
-                }
-
-                @Override
-                public void onError(AccountKitError accountKitError) {
-
-                }
-            });
+                    }
+                });
+            }
         }
 
+    }
+
+    private void createInternetNotAvailableDialog(){
+        SweetAlertDialog dialog = new SweetAlertDialog(this, SweetAlertDialog.WARNING_TYPE);
+        dialog.getProgressHelper().setBarColor(Color.parseColor("#A5DC86"));
+        dialog.setTitleText("Vui lòng kiểm tra lại kết nối mạng");
+        dialog.setCancelable(true);
+        dialog.show();
     }
 
     private void printkeyhash() {
@@ -138,6 +162,50 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    private void CheckAccountFee(){
+        final Map<String, Object> updateinfo = new HashMap<>();
+        updateinfo.put("activated" , false);
+        final Map<String, Object> updateinfo2 = new HashMap<>();
+        updateinfo.put("activated" , true);
+        AccountKit.getCurrentAccount(new AccountKitCallback<Account>() {
+            @Override
+            public void onSuccess(final Account account) {
+                final DatabaseReference fixer_tbl = FirebaseDatabase.getInstance().getReference(Common.fixer_inf_tbl);
+                fixer_tbl.child(account.getId()).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        Fixer fixer = dataSnapshot.getValue(Fixer.class);
+                        if (fixer.getJobFee() == 0){
+                            fixer_tbl.child(account.getId()).updateChildren(updateinfo).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    Common.isOver = true;
+                                }
+                            });
+                        } else{
+                            fixer_tbl.child(account.getId()).updateChildren(updateinfo2).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+
+                                }
+                            });
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+            }
+
+            @Override
+            public void onError(AccountKitError accountKitError) {
+
+            }
+        });
+    }
+
     void GetButtonControl(){
         //btnSignIn = (Button) findViewById(R.id.btn_signin);
         btnContinue = (Button) findViewById(R.id.btn_Continue);
@@ -150,7 +218,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         switch(v.getId()){
             case R.id.btn_Continue:
-                SignInWithPhone();
+                ConnectivityManager conMgr =  (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+                NetworkInfo netInfo = conMgr.getActiveNetworkInfo();
+                if (netInfo == null){
+                    createInternetNotAvailableDialog();
+                }else {
+                    SignInWithPhone();
+                }
                 break;
         }
     }

@@ -28,7 +28,6 @@ import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.github.badoualy.datepicker.DatePickerTimeline;
 import com.github.mikephil.charting.animation.Easing;
@@ -489,18 +488,14 @@ public class MonthlyStatisticalManagement extends Fragment implements OnChartVal
     }
 
     private void IntergrateData(PieChart chart, int Month1, int Month2, int Month3, String year, String TenQuy){
-        Log.e("Sample data", "month 1: " + Month1 + ", month2: " + Month2 + ", month3: " + Month3);
-        int sum = Month1 + Month2 + Month3;
-        int party1 = 0, party2 = 0, party3 = 0;
-        if (sum != 0){
-            party1 = (int) Month1/sum;
-            party2 = (int) Month2/sum;
-            party3 = (int) Month3/sum;
-        }
+        float sum = (float) Month1 + (float) Month2 + (float) Month3;
+        float party1 =  (Month1/sum)*100;
+        float party2 = (Month2/sum)*100;
+        float party3 = (Month3/sum)*100;
         ArrayList<PieEntry> entries = new ArrayList<>();
-        entries.add(new PieEntry(party1, "Tháng đầu"));
-        entries.add(new PieEntry(party2, "Tháng giữa"));
-        entries.add(new PieEntry(party3, "Tháng cuối"));
+        entries.add(new PieEntry((Month1/sum)*100, "Tháng đầu"));
+        entries.add(new PieEntry((Month2/sum)*100, "Tháng giữa"));
+        entries.add(new PieEntry((Month3/sum)*100, "Tháng cuối"));
 
         PieDataSet set = new PieDataSet(entries, "Thống kê % theo " + TenQuy);
         set.setValueTextSize(15f);
@@ -510,7 +505,7 @@ public class MonthlyStatisticalManagement extends Fragment implements OnChartVal
         set.setColors(ColorTemplate.COLORFUL_COLORS);
         set.setSelectionShift(12f);
         set.setUsingSliceColorAsValueLineColor(true);
-        set.setSliceSpace(16f);
+        set.setSliceSpace(0f);
         set.setValueLineWidth(10f);
         set.setHighlightEnabled(true);
         set.setValueTextSize(28f);
@@ -544,9 +539,9 @@ public class MonthlyStatisticalManagement extends Fragment implements OnChartVal
                         double total1 = 0;
                         double total2 = 0;
                         double total3 = 0;
-                        List<DailyStatistical> statisticals1 = new ArrayList<>();
-                        List<DailyStatistical> statisticals2 = new ArrayList<>();
-                        List<DailyStatistical> statisticals3 = new ArrayList<>();
+                        final List<DailyStatistical> statisticals1 = new ArrayList<>();
+                        final List<DailyStatistical> statisticals2 = new ArrayList<>();
+                        final List<DailyStatistical> statisticals3 = new ArrayList<>();
                         for (DataSnapshot item:snapshots){
                             Log.e("sample data", "" + item.toString());
                             String month = (Integer.parseInt(item.getKey()) + 1) + "";
@@ -559,6 +554,14 @@ public class MonthlyStatisticalManagement extends Fragment implements OnChartVal
                                     for (DataSnapshot item2:snapshots2){
                                         Log.e("sample data", "" + item2.toString());
                                         Statistical model = item2.getValue(Statistical.class);
+                                        dailyStatistical.setFinishedTime("Thứ " + model.getCompletedWeekDate() + ", ngày " +
+                                                model.getCompletedMonthDate() + ", " + model.getCompletedHour() + ": " + model.getCompletedMinutes());
+                                        dailyStatistical.setFixedLocation(model.getFixLocation());
+                                        dailyStatistical.setServiceFee(model.getServiceFee());
+                                        dailyStatistical.setServiceName(model.getServiceName());
+                                        dailyStatistical.setServiceVAT(model.getVatFee());
+                                        dailyStatistical.setCustomerName(model.getCustomerName());
+                                        dailyStatistical.setCustomerPhone(model.getCustomerPhone());
                                         dailyStatistical.setDate("Thứ " + model.getCompletedWeekDate() + ", ngày " +
                                                 model.getCompletedMonthDate());
                                         dailyStatistical.setFee(model.getTotalFee());
@@ -576,6 +579,14 @@ public class MonthlyStatisticalManagement extends Fragment implements OnChartVal
                                     for (DataSnapshot item2:snapshots2){
                                         Log.e("sample data", "" + item2.toString());
                                         Statistical model = item2.getValue(Statistical.class);
+                                        dailyStatistical.setFinishedTime("Thứ " + model.getCompletedWeekDate() + ", ngày " +
+                                                model.getCompletedMonthDate() + ", " + model.getCompletedHour() + ": " + model.getCompletedMinutes());
+                                        dailyStatistical.setFixedLocation(model.getFixLocation());
+                                        dailyStatistical.setServiceFee(model.getServiceFee());
+                                        dailyStatistical.setServiceName(model.getServiceName());
+                                        dailyStatistical.setServiceVAT(model.getVatFee());
+                                        dailyStatistical.setCustomerName(model.getCustomerName());
+                                        dailyStatistical.setCustomerPhone(model.getCustomerPhone());
                                         dailyStatistical.setDate("Thứ " + model.getCompletedWeekDate() + ", ngày " +
                                                 model.getCompletedMonthDate());
                                         dailyStatistical.setFee(model.getTotalFee());
@@ -593,6 +604,14 @@ public class MonthlyStatisticalManagement extends Fragment implements OnChartVal
                                     for (DataSnapshot item2:snapshots2){
                                         Log.e("sample data", "" + item2.toString());
                                         Statistical model = item2.getValue(Statistical.class);
+                                        dailyStatistical.setFinishedTime("Thứ " + model.getCompletedWeekDate() + ", ngày " +
+                                                model.getCompletedMonthDate() + ", " + model.getCompletedHour() + ": " + model.getCompletedMinutes());
+                                        dailyStatistical.setFixedLocation(model.getFixLocation());
+                                        dailyStatistical.setServiceFee(model.getServiceFee());
+                                        dailyStatistical.setServiceName(model.getServiceName());
+                                        dailyStatistical.setServiceVAT(model.getVatFee());
+                                        dailyStatistical.setCustomerName(model.getCustomerName());
+                                        dailyStatistical.setCustomerPhone(model.getCustomerPhone());
                                         dailyStatistical.setDate("Thứ " + model.getCompletedWeekDate() + ", ngày " +
                                                 model.getCompletedMonthDate());
                                         dailyStatistical.setFee(model.getTotalFee());
@@ -603,10 +622,31 @@ public class MonthlyStatisticalManagement extends Fragment implements OnChartVal
                             }
                             CustomListViewAdapter_forEachDayStatistical adapter = new CustomListViewAdapter_forEachDayStatistical(context, R.layout.customlistview_statistical_for_eachday, statisticals1);
                             lvMonth1.setAdapter(adapter);
+                            lvMonth1.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                                @Override
+                                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                                    DailyStatistical currentItem = statisticals1.get(position);
+                                    createStatisticalDetailDialog(currentItem);
+                                }
+                            });
                             CustomListViewAdapter_forEachDayStatistical adapter1 = new CustomListViewAdapter_forEachDayStatistical(context, R.layout.customlistview_statistical_for_eachday, statisticals2);
                             lvMonth2.setAdapter(adapter1);
+                            lvMonth2.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                                @Override
+                                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                                    DailyStatistical currentItem = statisticals2.get(position);
+                                    createStatisticalDetailDialog(currentItem);
+                                }
+                            });
                             CustomListViewAdapter_forEachDayStatistical adapter2 = new CustomListViewAdapter_forEachDayStatistical(context, R.layout.customlistview_statistical_for_eachday, statisticals3);
                             lvMonth3.setAdapter(adapter2);
+                            lvMonth3.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                                @Override
+                                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                                    DailyStatistical currentItem = statisticals3.get(position);
+                                    createStatisticalDetailDialog(currentItem);
+                                }
+                            });
 
                         }
                         Log.e("total", "Tháng 1: " + total1 + ", tháng 2: " + total2 + ", tháng 3: " + total3);
@@ -635,12 +675,12 @@ public class MonthlyStatisticalManagement extends Fragment implements OnChartVal
                         double total1 = 0;
                         double total2 = 0;
                         double total3 = 0;
+                        final List<DailyStatistical> statisticals1 = new ArrayList<>();
+                        final List<DailyStatistical> statisticals2 = new ArrayList<>();
+                        final List<DailyStatistical> statisticals3 = new ArrayList<>();
                         for (DataSnapshot item:snapshots){
                             Log.e("sample data", "" + item.toString());
                             String month = (Integer.parseInt(item.getKey()) + 1) + "";
-                            List<DailyStatistical> statisticals1 = new ArrayList<>();
-                            List<DailyStatistical> statisticals2 = new ArrayList<>();
-                            List<DailyStatistical> statisticals3 = new ArrayList<>();
                             if (month.equals("4")){
                                 Iterable<DataSnapshot> snapshots1 = item.getChildren();
                                 for (DataSnapshot item1:snapshots1){
@@ -650,6 +690,14 @@ public class MonthlyStatisticalManagement extends Fragment implements OnChartVal
                                     for (DataSnapshot item2:snapshots2){
                                         Log.e("sample data", "" + item2.toString());
                                         Statistical model = item2.getValue(Statistical.class);
+                                        dailyStatistical.setFinishedTime("Thứ " + model.getCompletedWeekDate() + ", ngày " +
+                                                model.getCompletedMonthDate() + ", " + model.getCompletedHour() + ": " + model.getCompletedMinutes());
+                                        dailyStatistical.setFixedLocation(model.getFixLocation());
+                                        dailyStatistical.setServiceFee(model.getServiceFee());
+                                        dailyStatistical.setServiceName(model.getServiceName());
+                                        dailyStatistical.setServiceVAT(model.getVatFee());
+                                        dailyStatistical.setCustomerName(model.getCustomerName());
+                                        dailyStatistical.setCustomerPhone(model.getCustomerPhone());
                                         dailyStatistical.setDate("Thứ " + model.getCompletedWeekDate() + ", ngày " +
                                                 model.getCompletedMonthDate());
                                         dailyStatistical.setFee(model.getTotalFee());
@@ -667,6 +715,14 @@ public class MonthlyStatisticalManagement extends Fragment implements OnChartVal
                                     for (DataSnapshot item2:snapshots2){
                                         Log.e("sample data", "" + item2.toString());
                                         Statistical model = item2.getValue(Statistical.class);
+                                        dailyStatistical.setFinishedTime("Thứ " + model.getCompletedWeekDate() + ", ngày " +
+                                                model.getCompletedMonthDate() + ", " + model.getCompletedHour() + ": " + model.getCompletedMinutes());
+                                        dailyStatistical.setFixedLocation(model.getFixLocation());
+                                        dailyStatistical.setServiceFee(model.getServiceFee());
+                                        dailyStatistical.setServiceName(model.getServiceName());
+                                        dailyStatistical.setServiceVAT(model.getVatFee());
+                                        dailyStatistical.setCustomerName(model.getCustomerName());
+                                        dailyStatistical.setCustomerPhone(model.getCustomerPhone());
                                         dailyStatistical.setDate("Thứ " + model.getCompletedWeekDate() + ", ngày " +
                                                 model.getCompletedMonthDate());
                                         dailyStatistical.setFee(model.getTotalFee());
@@ -684,20 +740,52 @@ public class MonthlyStatisticalManagement extends Fragment implements OnChartVal
                                     for (DataSnapshot item2:snapshots2){
                                         Log.e("sample data", "" + item2.toString());
                                         Statistical model = item2.getValue(Statistical.class);
+                                        dailyStatistical.setFinishedTime("Thứ " + model.getCompletedWeekDate() + ", ngày " +
+                                                model.getCompletedMonthDate() + ", " + model.getCompletedHour() + ": " + model.getCompletedMinutes());
+                                        dailyStatistical.setFixedLocation(model.getFixLocation());
+                                        dailyStatistical.setServiceFee(model.getServiceFee());
+                                        dailyStatistical.setServiceName(model.getServiceName());
+                                        dailyStatistical.setServiceVAT(model.getVatFee());
+                                        dailyStatistical.setCustomerName(model.getCustomerName());
+                                        dailyStatistical.setCustomerPhone(model.getCustomerPhone());
                                         dailyStatistical.setDate("Thứ " + model.getCompletedWeekDate() + ", ngày " +
                                                 model.getCompletedMonthDate());
                                         dailyStatistical.setFee(model.getTotalFee());
                                         total3 += model.getTotalFee();
                                     }
                                     statisticals3.add(dailyStatistical);
+                                    Log.e("size of 3", "" + statisticals3.size());
                                 }
                             }
+                            Log.e("size of 2", "" + statisticals2.size());
+                            Log.e("size of 3", "" + statisticals3.size());
                             CustomListViewAdapter_forEachDayStatistical adapter = new CustomListViewAdapter_forEachDayStatistical(context, R.layout.customlistview_statistical_for_eachday, statisticals1);
                             lvMonth1.setAdapter(adapter);
+                            lvMonth1.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                                @Override
+                                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                                    DailyStatistical currentItem = statisticals1.get(position);
+                                    createStatisticalDetailDialog(currentItem);
+                                }
+                            });
                             CustomListViewAdapter_forEachDayStatistical adapter1 = new CustomListViewAdapter_forEachDayStatistical(context, R.layout.customlistview_statistical_for_eachday, statisticals2);
                             lvMonth2.setAdapter(adapter1);
+                            lvMonth2.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                                @Override
+                                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                                    DailyStatistical currentItem = statisticals2.get(position);
+                                    createStatisticalDetailDialog(currentItem);
+                                }
+                            });
                             CustomListViewAdapter_forEachDayStatistical adapter2 = new CustomListViewAdapter_forEachDayStatistical(context, R.layout.customlistview_statistical_for_eachday, statisticals3);
                             lvMonth3.setAdapter(adapter2);
+                            lvMonth3.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                                @Override
+                                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                                    DailyStatistical currentItem = statisticals3.get(position);
+                                    createStatisticalDetailDialog(currentItem);
+                                }
+                            });
                         }
                         Log.e("total", "Tháng 1: " + total1 + ", tháng 2: " + total2 + ", tháng 3: " + total3);
                         TongDoanhThuTrongQuy.setText("$" + (total1 + total2 + total3));
@@ -725,12 +813,12 @@ public class MonthlyStatisticalManagement extends Fragment implements OnChartVal
                         double total1 = 0;
                         double total2 = 0;
                         double total3 = 0;
+                        final List<DailyStatistical> statisticals1 = new ArrayList<>();
+                        final List<DailyStatistical> statisticals2 = new ArrayList<>();
+                        final List<DailyStatistical> statisticals3 = new ArrayList<>();
                         for (DataSnapshot item:snapshots){
                             Log.e("sample data", "" + item.toString());
                             String month = (Integer.parseInt(item.getKey()) + 1) + "";
-                            List<DailyStatistical> statisticals1 = new ArrayList<>();
-                            List<DailyStatistical> statisticals2 = new ArrayList<>();
-                            List<DailyStatistical> statisticals3 = new ArrayList<>();
                             if (month.equals("7")){
                                 Iterable<DataSnapshot> snapshots1 = item.getChildren();
                                 for (DataSnapshot item1:snapshots1){
@@ -740,6 +828,14 @@ public class MonthlyStatisticalManagement extends Fragment implements OnChartVal
                                     for (DataSnapshot item2:snapshots2){
                                         Log.e("sample data", "" + item2.toString());
                                         Statistical model = item2.getValue(Statistical.class);
+                                        dailyStatistical.setFinishedTime("Thứ " + model.getCompletedWeekDate() + ", ngày " +
+                                                model.getCompletedMonthDate() + ", " + model.getCompletedHour() + ": " + model.getCompletedMinutes());
+                                        dailyStatistical.setFixedLocation(model.getFixLocation());
+                                        dailyStatistical.setServiceFee(model.getServiceFee());
+                                        dailyStatistical.setServiceName(model.getServiceName());
+                                        dailyStatistical.setServiceVAT(model.getVatFee());
+                                        dailyStatistical.setCustomerName(model.getCustomerName());
+                                        dailyStatistical.setCustomerPhone(model.getCustomerPhone());
                                         dailyStatistical.setDate("Thứ " + model.getCompletedWeekDate() + ", ngày " +
                                                 model.getCompletedMonthDate());
                                         dailyStatistical.setFee(model.getTotalFee());
@@ -757,6 +853,14 @@ public class MonthlyStatisticalManagement extends Fragment implements OnChartVal
                                     for (DataSnapshot item2:snapshots2){
                                         Log.e("sample data", "" + item2.toString());
                                         Statistical model = item2.getValue(Statistical.class);
+                                        dailyStatistical.setFinishedTime("Thứ " + model.getCompletedWeekDate() + ", ngày " +
+                                                model.getCompletedMonthDate() + ", " + model.getCompletedHour() + ": " + model.getCompletedMinutes());
+                                        dailyStatistical.setFixedLocation(model.getFixLocation());
+                                        dailyStatistical.setServiceFee(model.getServiceFee());
+                                        dailyStatistical.setServiceName(model.getServiceName());
+                                        dailyStatistical.setServiceVAT(model.getVatFee());
+                                        dailyStatistical.setCustomerName(model.getCustomerName());
+                                        dailyStatistical.setCustomerPhone(model.getCustomerPhone());
                                         dailyStatistical.setDate("Thứ " + model.getCompletedWeekDate() + ", ngày " +
                                                 model.getCompletedMonthDate());
                                         dailyStatistical.setFee(model.getTotalFee());
@@ -774,6 +878,14 @@ public class MonthlyStatisticalManagement extends Fragment implements OnChartVal
                                     for (DataSnapshot item2:snapshots2){
                                         Log.e("sample data", "" + item2.toString());
                                         Statistical model = item2.getValue(Statistical.class);
+                                        dailyStatistical.setFinishedTime("Thứ " + model.getCompletedWeekDate() + ", ngày " +
+                                                model.getCompletedMonthDate() + ", " + model.getCompletedHour() + ": " + model.getCompletedMinutes());
+                                        dailyStatistical.setFixedLocation(model.getFixLocation());
+                                        dailyStatistical.setServiceFee(model.getServiceFee());
+                                        dailyStatistical.setServiceName(model.getServiceName());
+                                        dailyStatistical.setServiceVAT(model.getVatFee());
+                                        dailyStatistical.setCustomerName(model.getCustomerName());
+                                        dailyStatistical.setCustomerPhone(model.getCustomerPhone());
                                         dailyStatistical.setDate("Thứ " + model.getCompletedWeekDate() + ", ngày " +
                                                 model.getCompletedMonthDate());
                                         dailyStatistical.setFee(model.getTotalFee());
@@ -784,10 +896,31 @@ public class MonthlyStatisticalManagement extends Fragment implements OnChartVal
                             }
                             CustomListViewAdapter_forEachDayStatistical adapter = new CustomListViewAdapter_forEachDayStatistical(context, R.layout.customlistview_statistical_for_eachday, statisticals1);
                             lvMonth1.setAdapter(adapter);
+                            lvMonth1.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                                @Override
+                                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                                    DailyStatistical currentItem = statisticals1.get(position);
+                                    createStatisticalDetailDialog(currentItem);
+                                }
+                            });
                             CustomListViewAdapter_forEachDayStatistical adapter1 = new CustomListViewAdapter_forEachDayStatistical(context, R.layout.customlistview_statistical_for_eachday, statisticals2);
                             lvMonth2.setAdapter(adapter1);
+                            lvMonth2.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                                @Override
+                                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                                    DailyStatistical currentItem = statisticals2.get(position);
+                                    createStatisticalDetailDialog(currentItem);
+                                }
+                            });
                             CustomListViewAdapter_forEachDayStatistical adapter2 = new CustomListViewAdapter_forEachDayStatistical(context, R.layout.customlistview_statistical_for_eachday, statisticals3);
                             lvMonth3.setAdapter(adapter2);
+                            lvMonth3.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                                @Override
+                                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                                    DailyStatistical currentItem = statisticals3.get(position);
+                                    createStatisticalDetailDialog(currentItem);
+                                }
+                            });
                         }
                         Log.e("total", "Tháng 1: " + total1 + ", tháng 2: " + total2 + ", tháng 3: " + total3);
                         TongDoanhThuTrongQuy.setText("$" + (total1 + total2 + total3));
@@ -815,12 +948,12 @@ public class MonthlyStatisticalManagement extends Fragment implements OnChartVal
                         double total1 = 0;
                         double total2 = 0;
                         double total3 = 0;
+                        final List<DailyStatistical> statisticals1 = new ArrayList<>();
+                        final List<DailyStatistical> statisticals2 = new ArrayList<>();
+                        final List<DailyStatistical> statisticals3 = new ArrayList<>();
                         for (DataSnapshot item:snapshots){
                             Log.e("sample data", "" + item.toString());
                             String month = (Integer.parseInt(item.getKey()) + 1) + "";
-                            List<DailyStatistical> statisticals1 = new ArrayList<>();
-                            List<DailyStatistical> statisticals2 = new ArrayList<>();
-                            List<DailyStatistical> statisticals3 = new ArrayList<>();
                             if (month.equals("10")){
                                 Iterable<DataSnapshot> snapshots1 = item.getChildren();
                                 for (DataSnapshot item1:snapshots1){
@@ -830,6 +963,14 @@ public class MonthlyStatisticalManagement extends Fragment implements OnChartVal
                                     for (DataSnapshot item2:snapshots2){
                                         Log.e("sample data", "" + item2.toString());
                                         Statistical model = item2.getValue(Statistical.class);
+                                        dailyStatistical.setFinishedTime("Thứ " + model.getCompletedWeekDate() + ", ngày " +
+                                                model.getCompletedMonthDate() + ", " + model.getCompletedHour() + ": " + model.getCompletedMinutes());
+                                        dailyStatistical.setFixedLocation(model.getFixLocation());
+                                        dailyStatistical.setServiceFee(model.getServiceFee());
+                                        dailyStatistical.setServiceName(model.getServiceName());
+                                        dailyStatistical.setServiceVAT(model.getVatFee());
+                                        dailyStatistical.setCustomerName(model.getCustomerName());
+                                        dailyStatistical.setCustomerPhone(model.getCustomerPhone());
                                         dailyStatistical.setDate("Thứ " + model.getCompletedWeekDate() + ", ngày " +
                                                 model.getCompletedMonthDate());
                                         dailyStatistical.setFee(model.getTotalFee());
@@ -847,6 +988,14 @@ public class MonthlyStatisticalManagement extends Fragment implements OnChartVal
                                     for (DataSnapshot item2:snapshots2){
                                         Log.e("sample data", "" + item2.toString());
                                         Statistical model = item2.getValue(Statistical.class);
+                                        dailyStatistical.setFinishedTime("Thứ " + model.getCompletedWeekDate() + ", ngày " +
+                                                model.getCompletedMonthDate() + ", " + model.getCompletedHour() + ": " + model.getCompletedMinutes());
+                                        dailyStatistical.setFixedLocation(model.getFixLocation());
+                                        dailyStatistical.setServiceFee(model.getServiceFee());
+                                        dailyStatistical.setServiceName(model.getServiceName());
+                                        dailyStatistical.setServiceVAT(model.getVatFee());
+                                        dailyStatistical.setCustomerName(model.getCustomerName());
+                                        dailyStatistical.setCustomerPhone(model.getCustomerPhone());
                                         dailyStatistical.setDate("Thứ " + model.getCompletedWeekDate() + ", ngày " +
                                                 model.getCompletedMonthDate());
                                         dailyStatistical.setFee(model.getTotalFee());
@@ -864,6 +1013,14 @@ public class MonthlyStatisticalManagement extends Fragment implements OnChartVal
                                     for (DataSnapshot item2:snapshots2){
                                         Log.e("sample data", "" + item2.toString());
                                         Statistical model = item2.getValue(Statistical.class);
+                                        dailyStatistical.setFinishedTime("Thứ " + model.getCompletedWeekDate() + ", ngày " +
+                                                model.getCompletedMonthDate() + ", " + model.getCompletedHour() + ": " + model.getCompletedMinutes());
+                                        dailyStatistical.setFixedLocation(model.getFixLocation());
+                                        dailyStatistical.setServiceFee(model.getServiceFee());
+                                        dailyStatistical.setServiceName(model.getServiceName());
+                                        dailyStatistical.setServiceVAT(model.getVatFee());
+                                        dailyStatistical.setCustomerName(model.getCustomerName());
+                                        dailyStatistical.setCustomerPhone(model.getCustomerPhone());
                                         dailyStatistical.setDate("Thứ " + model.getCompletedWeekDate() + ", ngày " +
                                                 model.getCompletedMonthDate());
                                         dailyStatistical.setFee(model.getTotalFee());
@@ -874,10 +1031,31 @@ public class MonthlyStatisticalManagement extends Fragment implements OnChartVal
                             }
                             CustomListViewAdapter_forEachDayStatistical adapter = new CustomListViewAdapter_forEachDayStatistical(context, R.layout.customlistview_statistical_for_eachday, statisticals1);
                             lvMonth1.setAdapter(adapter);
+                            lvMonth1.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                                @Override
+                                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                                    DailyStatistical currentItem = statisticals1.get(position);
+                                    createStatisticalDetailDialog(currentItem);
+                                }
+                            });
                             CustomListViewAdapter_forEachDayStatistical adapter1 = new CustomListViewAdapter_forEachDayStatistical(context, R.layout.customlistview_statistical_for_eachday, statisticals2);
                             lvMonth2.setAdapter(adapter1);
+                            lvMonth2.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                                @Override
+                                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                                    DailyStatistical currentItem = statisticals2.get(position);
+                                    createStatisticalDetailDialog(currentItem);
+                                }
+                            });
                             CustomListViewAdapter_forEachDayStatistical adapter2 = new CustomListViewAdapter_forEachDayStatistical(context, R.layout.customlistview_statistical_for_eachday, statisticals3);
                             lvMonth3.setAdapter(adapter2);
+                            lvMonth3.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                                @Override
+                                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                                    DailyStatistical currentItem = statisticals3.get(position);
+                                    createStatisticalDetailDialog(currentItem);
+                                }
+                            });
 
                         }
                         Log.e("total", "Tháng 1: " + total1 + ", tháng 2: " + total2 + ", tháng 3: " + total3);
@@ -913,5 +1091,41 @@ public class MonthlyStatisticalManagement extends Fragment implements OnChartVal
     @Override
     public void onNothingSelected() {
 
+    }
+
+    private void createStatisticalDetailDialog(DailyStatistical item){
+        android.app.AlertDialog.Builder dialog = new android.app.AlertDialog.Builder(context);
+        dialog.setTitle("Thông tin chi tiết hóa đơn");
+        LayoutInflater inflater = this.getLayoutInflater();
+        View statisticalDetail = inflater.inflate(R.layout.specific_statistical_dialog, null);
+
+        final TextView txtTotalFee = (TextView) statisticalDetail.findViewById(R.id.txtDetailTotal);
+        final TextView txtCustomerName = (TextView) statisticalDetail.findViewById(R.id.txtDetailName);
+        final TextView txtCustomerPhone = (TextView) statisticalDetail.findViewById(R.id.customer_phone);
+        final TextView txtServiceName = (TextView) statisticalDetail.findViewById(R.id.txtServiceName);
+        final TextView txtServiceFee = (TextView) statisticalDetail.findViewById(R.id.txtServiceFee);
+        final TextView txt_ServiceVATFee = (TextView) statisticalDetail.findViewById(R.id.txt_ServiceVATFee);
+        final TextView txtFix_Location = (TextView) statisticalDetail.findViewById(R.id.txtFix_Location);
+        final TextView txtFix_time = (TextView) statisticalDetail.findViewById(R.id.txtFix_time);
+
+        txtTotalFee.setText("$" + item.getFee());
+        txtCustomerName.setText(item.getCustomerName());
+        txtCustomerPhone.setText(item.getCustomerPhone());
+        txtServiceName.setText(item.getServiceName());
+        txtServiceFee.setText("$" + item.getServiceFee());
+        txt_ServiceVATFee.setText("$" + item.getServiceVAT());
+        txtFix_Location.setText(item.getFixedLocation());
+        txtFix_time.setText(item.getFinishedTime());
+
+        dialog.setView(statisticalDetail);
+
+        dialog.setPositiveButton("Đóng", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int which) {
+                dialogInterface.dismiss();
+            }
+        });
+
+        dialog.show();
     }
 }
